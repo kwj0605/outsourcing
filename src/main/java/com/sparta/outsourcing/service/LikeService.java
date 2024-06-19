@@ -40,10 +40,10 @@ public class LikeService {
 
         if (like.getContentType().equals(ContentType.Order)) {
             Order order = orderRepository.findById(like.getContentId()).orElseThrow();
-            likecnt =  order.updateLike(like.isLike());
+            likecnt =  order.updateLike(like.isLiked());
         } else {
             Review review = reviewRepository.findById(like.getContentId()).orElseThrow();
-            likecnt =review.updateLike(like.isLike());
+            likecnt =review.updateLike(like.isLiked());
         }
         return likecnt;
     }

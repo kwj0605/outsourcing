@@ -1,5 +1,6 @@
 package com.sparta.outsourcing.controller;
 
+import com.sparta.outsourcing.dto.LikeResponseDto;
 import com.sparta.outsourcing.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +18,9 @@ public class LikeController {
 
     @PutMapping("/{contentType}/{contentId}")
     public ResponseEntity<String> updateLike(@PathVariable("contentType") String contentType, @PathVariable Long contentId){
-        likeService.updateLike(contentType, contentId);
-        return ResponseEntity.ok("좋아요가 수정되었습니다.");
+        LikeResponseDto likeResponseDto = likeService.updateLike(contentType, contentId);
+        Long likecnt = likeResponseDto.getLikecnt();
+        return ResponseEntity.ok("좋아요가 수정되었습니다 : " + likecnt);
     }
 
 }
