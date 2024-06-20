@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Entity
@@ -38,9 +39,11 @@ public class User extends Timestamped {
     private String userinfo;
 
     @Column(nullable = false)
+    @Setter
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
 
     @Column(nullable = false)
+    @Setter
     private UserRoleEnum role;
 
     private String refreshToken;

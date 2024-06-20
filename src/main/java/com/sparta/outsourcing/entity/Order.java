@@ -18,6 +18,7 @@ public class Order {
     @Column(nullable = false)
     private String content;
 
+
     public Long updateLike(boolean islike){
         if(islike){this.like -= 1;}
         else{this.like += 1;}

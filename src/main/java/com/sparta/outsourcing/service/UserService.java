@@ -46,18 +46,29 @@ public class UserService {
 
     @Transactional
     public ResponseEntity<String> updateProfile(Long userId, User user, ProfileDto profileDto) {
-        if(!validateUser(userId,user.getId())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("다른 유저를 수정할 수 없습니다.");
+
+        ProfileDto newProfileDto;
+
+        if (user.getRole().equals(UserRoleEnum.USER)) {
+            if(!validateUser(userId,user.getId())){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("다른 유저를 수정할 수 없습니다.");
+            }
+            if(validatePassword(user,profileDto.getPassword())){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("최근 3번안에 사용한 비밀번호는 사용할 수 없습니다.");
+            }
+            if(bCryptPasswordEncoder.matches(user.getPassword(),profileDto.getPassword())){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재와 같은 비밀번호는 변경할수 없습니다.");
+            }
+
+            newProfileDto = new ProfileDto(
+                    profileDto.getNickname(), profileDto.getUserinfo(), bCryptPasswordEncoder.encode(profileDto.getPassword())
+            );
+        } else {
+            newProfileDto = new ProfileDto(
+                    profileDto.getNickname(), profileDto.getUserinfo(), user.getPassword()
+            );
         }
-        if(validatePassword(user,profileDto.getPassword())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("최근 3번안에 사용한 비밀번호는 사용할 수 없습니다.");
-        }
-        if(bCryptPasswordEncoder.matches(user.getPassword(),profileDto.getPassword())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현제 같은 비밀번호는 변경할수 없습니다.");
-        }
-        ProfileDto newProfileDto = new ProfileDto(
-                profileDto.getNickname(), profileDto.getUserinfo(), bCryptPasswordEncoder.encode(profileDto.getPassword())
-        );
+
         Optional<User> originUser = userRepository.findById(userId);
         originUser.get().updateProfile(newProfileDto);
         return ResponseEntity.status(HttpStatus.OK).body("수정완료");

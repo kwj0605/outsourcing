@@ -1,13 +1,14 @@
 package com.sparta.outsourcing.service;
 
 import com.sparta.outsourcing.dto.LikeResponseDto;
-import com.sparta.outsourcing.entity.*;
+import com.sparta.outsourcing.entity.Like;
+import com.sparta.outsourcing.entity.Order;
+import com.sparta.outsourcing.entity.Review;
 import com.sparta.outsourcing.enums.ContentTypeEnum;
 import com.sparta.outsourcing.repository.LikeRepository;
 import com.sparta.outsourcing.repository.OrderRepository;
 import com.sparta.outsourcing.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
-import jdk.jfr.ContentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -15,9 +15,16 @@ public class Review {
     @Column(nullable = false)
     private Long like = 0L;
 
+    @Column(nullable = false)
+    private String content;
+
     public Long updateLike(boolean islike){
         if(islike){this.like -= 1;}
         else{this.like += 1;}
         return this.like;
+    }
+
+    public void update(String newContent){
+        this.content = newContent;
     }
 }
