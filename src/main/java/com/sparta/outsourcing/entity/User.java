@@ -43,7 +43,9 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private UserRoleEnum role;
 
+    @Column(name = "refresh_token")
     private String refreshToken;
+
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> deniedPassword = new ArrayList<>(3);
     @Column
@@ -65,7 +67,7 @@ public class User extends Timestamped {
         setDeniedPassword(profileDto.getPassword());
     }
 
-    //최근 변경한 비밀번호 저장
+    // 최근 변경한 비밀번호 저장
     private void setDeniedPassword(String password){
         if(deniedPassword.size() > 2){
             deniedPassword.remove(0);
@@ -73,8 +75,13 @@ public class User extends Timestamped {
         deniedPassword.add(password);
     }
 
-    //삭제처리
+    // 삭제처리
     public void deleteUser() {
-        this.status = UserStatusEnum.DENIED;
+
+    }
+
+    // 리프레쉬 토큰
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

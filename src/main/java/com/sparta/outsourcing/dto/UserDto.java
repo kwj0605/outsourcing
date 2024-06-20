@@ -3,10 +3,7 @@ package com.sparta.outsourcing.dto;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Setter
