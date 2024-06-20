@@ -30,6 +30,10 @@ public class UserService {
                 userDto.getUserinfo(),
                 userRoleEnum
         );
+        if(userRepository.findByUsername(userDto.getUsername()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("중복된 아이디 입니다.");
+        }
+        
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body("가입 완료");
     }
