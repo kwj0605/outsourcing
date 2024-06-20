@@ -3,12 +3,13 @@ package com.sparta.outsourcing.dto;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@NoArgsConstructor
-@RequiredArgsConstructor
+@Setter
 @Getter
 public class UserDto {
     @NotBlank(message = "필수로 입력해야됩니다.")

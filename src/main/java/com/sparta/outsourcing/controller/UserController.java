@@ -3,6 +3,7 @@ package com.sparta.outsourcing.controller;
 import com.sparta.outsourcing.dto.CustomUserDetails;
 import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.dto.UserDto;
+import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +34,12 @@ public class UserController {
         return userService.getProfile(userId);
     }
     @PatchMapping("/{userId}")
-    public ResponseEntity<String> updateProfile(@PathVariable("userId") Long userId, @AuthenticationPrincipal CustomUserDetails userDetails, ProfileDto profileDto) {
-        return userService.updateProfile(userId,userDetails.getUser(),profileDto);
+    public ResponseEntity<String> updateProfile(@PathVariable("userId") Long userId,
+            CustomUserDetails user ,ProfileDto profileDto) {
+        return userService.updateProfile(userId,user.getUser(),profileDto);
     }
     @PostMapping("/{userId}/sign-out")
-    public ResponseEntity<String> signOut(@PathVariable("userId") Long userId, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return userService.signOut(userId, userDetails.getUser());
+    public ResponseEntity<String> signOut(@PathVariable("userId") Long userId, CustomUserDetails user) {
+        return userService.signOut(userId, user.getUser());
     }
 }
