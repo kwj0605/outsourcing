@@ -34,7 +34,6 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.OK).body("가입 완료");
     }
 
-
     public ResponseEntity<ProfileDto> getProfile(Long userId) {
         Optional<User> user = userRepository.findById(userId);
         ProfileDto profileDto = new ProfileDto(
