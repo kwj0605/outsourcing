@@ -30,7 +30,7 @@ public class AuthService {
         // accessToken 유효성 확인
         if(jwtService.validateToken(refreshToken)){
             String userId = jwtService.extractUserId(refreshToken);
-            User user = userRepository.findByUserName(userId).orElseThrow(UserIdNotFoundException::new);
+            User user = userRepository.findByUsername(userId).orElseThrow(UserIdNotFoundException::new);
 
             // accessToken 새로 발급
             String newAccessToken = jwtService.createToken(user.getUsername());

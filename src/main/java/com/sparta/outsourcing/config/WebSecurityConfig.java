@@ -9,7 +9,6 @@ import com.sparta.outsourcing.security.UserDetailsServiceImpl;
 import com.sparta.outsourcing.service.JwtBlacklistService;
 import com.sparta.outsourcing.service.JwtService;
 import com.sparta.outsourcing.service.UserService;
-import jakarta.servlet.Filter;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +30,7 @@ public class WebSecurityConfig {
     private final JwtBlacklistService jwtBlacklistService;
 
     public WebSecurityConfig(JwtService jwtService, UserDetailsServiceImpl userDetailsService,
-                             AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository, JwtBlacklistService jwtBlacklistService, UserService userService) {
+                             AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository, JwtBlacklistService jwtBlacklistService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
         this.authenticationConfiguration = authenticationConfiguration;

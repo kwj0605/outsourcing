@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try{
             LoginRequestDto loginRequestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
-            User user = userRepository.findByUserName(loginRequestDto.getUsername()).orElse(null);
+            User user = userRepository.findByUsername(loginRequestDto.getUsername()).orElse(null);
             if(null != user) {
                 if(user.getStatus() == DENIED){
                     log.info("삭제된 사용자입니다");
@@ -67,7 +67,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String token = jwtService.createToken(userId);
         String refreshToken = jwtService.createRefreshToken(userId);
         // refresh token 유저에 저장
-        User user = userRepository.findByUserName(userId).orElseThrow(NullPointerException::new);
+        User user = userRepository.findByUsername(userId).orElseThrow(NullPointerException::new);
         user.setRefreshToken(refreshToken);
 
         userRepository.save(user);
