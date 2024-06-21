@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
-        setFilterProcessesUrl("/api/users/login");
+        setFilterProcessesUrl("/api/auth/login");
     }
 
     @Override
@@ -36,10 +36,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try{
             LoginRequestDto loginRequestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
-            User user = userRepository.findByUserName(loginRequestDto.getUsername()).orElseThrow(NullPointerException::new);
-            if(user.getStatus() == DENIED){
-                log.info("삭제된 사용자입니다");
-                throw new IllegalArgumentException("삭제된 사용자입니다.");
+            User user = userRepository.findByUserName(loginRequestDto.getUsername()).orElse(null);
+            if(null != user) {
+                if(user.getStatus() == DENIED){
+                    log.info("삭제된 사용자입니다");
+                    throw new IllegalArgumentException("삭제된 사용자입니다.");
+                }
             }
 
             return getAuthenticationManager().authenticate(
