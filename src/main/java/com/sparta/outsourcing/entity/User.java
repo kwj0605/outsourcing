@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -76,5 +77,6 @@ public class User extends Timestamped {
     //삭제처리
     public void deleteUser() {
         this.status = UserStatusEnum.DENIED;
+        this.setDeletedAt(LocalDateTime.now());
     }
 }
