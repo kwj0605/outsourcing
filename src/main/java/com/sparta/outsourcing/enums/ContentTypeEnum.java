@@ -1,7 +1,7 @@
 package com.sparta.outsourcing.enums;
 
 public enum ContentTypeEnum {
-    ORDER("order"),
+    RESTAURANT("restaurant"),
     REVIEW("review");
 
     private final String contentType;

@@ -3,10 +3,12 @@ package com.sparta.outsourcing.service;
 import com.sparta.outsourcing.dto.LikeResponseDto;
 import com.sparta.outsourcing.entity.Like;
 import com.sparta.outsourcing.entity.Order;
+import com.sparta.outsourcing.entity.Restaurant;
 import com.sparta.outsourcing.entity.Review;
 import com.sparta.outsourcing.enums.ContentTypeEnum;
 import com.sparta.outsourcing.repository.LikeRepository;
 import com.sparta.outsourcing.repository.OrderRepository;
+import com.sparta.outsourcing.repository.RestaurantRepository;
 import com.sparta.outsourcing.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final ReviewRepository reviewRepository;
     private final OrderRepository orderRepository;
+    private final RestaurantRepository restaurantRepository;
 
     public LikeResponseDto updateLike(ContentTypeEnum contentType, Long contentId) {
         Like like = likeRepository.findByContentTypeAndContentId(contentType, contentId)
@@ -34,9 +37,9 @@ public class LikeService {
 
         Long cnt;
 
-        if (like.getContentType().equals(ContentTypeEnum.ORDER)) {
-            Order order = orderRepository.findById(like.getContentId()).orElseThrow();
-            cnt =  order.updateLike(like.isLiked());
+        if (like.getContentType().equals(ContentTypeEnum.RESTAURANT)) {
+            Restaurant restaurant = restaurantRepository.findById(like.getContentId()).orElseThrow();
+            cnt =  restaurant.updateLike(like.isLiked());
         } else {
             Review review = reviewRepository.findById(like.getContentId()).orElseThrow();
             cnt =review.updateLike(like.isLiked());

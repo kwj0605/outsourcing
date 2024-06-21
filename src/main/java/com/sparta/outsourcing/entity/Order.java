@@ -3,29 +3,44 @@ package com.sparta.outsourcing.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
 @NoArgsConstructor
-public class Order {
+public class Order extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long like = 0L;
+    @ManyToOne
+    @JoinColumn(name="userId", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name="restaurantId", nullable = false)
+    private Restaurant restaurant;
 
     @Column(nullable = false)
-    private String content;
+    private int totalPrice;
 
+    @Column(nullable = false)
+    private String payType;
 
-    public Long updateLike(boolean islike){
-        if(islike){this.like -= 1;}
-        else{this.like += 1;}
-        return this.like;
-    }
+    @Setter
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderMenu> orderMenus = new ArrayList<>();
 
-    public void update(String newContent){
-        this.content = newContent;
+    @Column(nullable = false)
+    private String orderStatus;
+
+    public Order(User user, Restaurant restaurant, int totalPrice, String payType) {
+        this.user = user;
+        this.restaurant = restaurant;
+        this.totalPrice = totalPrice;
+        this.payType = payType;
     }
 }
