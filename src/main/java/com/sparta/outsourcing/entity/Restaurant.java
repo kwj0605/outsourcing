@@ -20,7 +20,4 @@ public class Restaurant {
     @Column(nullable = false)
     private String phoneNumber;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.PERSIST, orphanRemoval = true)
-    private List<Menu> menuList = new ArrayList<>();
 }

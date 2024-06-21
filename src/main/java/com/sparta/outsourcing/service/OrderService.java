@@ -1,81 +1,80 @@
 package com.sparta.outsourcing.service;
 
-import com.sparta.outsourcing.dto.CartRequestDto;
-import com.sparta.outsourcing.dto.CartResponseDto;
 import com.sparta.outsourcing.dto.OrderRequestDto;
 import com.sparta.outsourcing.dto.OrderResponseDto;
-import com.sparta.outsourcing.entity.Cart;
 import com.sparta.outsourcing.entity.Menu;
 import com.sparta.outsourcing.entity.Order;
-//import com.sparta.outsourcing.entity.User;
-import com.sparta.outsourcing.repository.CartRepository;
 import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.repository.OrderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sparta.outsourcing.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class OrderService {
-    @Autowired
     private OrderRepository orderRepository;
-    @Autowired
     private MenuRepository menuRepository;
-    @Autowired
-    private CartRepository cartRepository;
+    private UserRepository userRepository;
+
+    public OrderService(OrderRepository orderRepository, MenuRepository menuRepository, UserRepository userRepository) {
+        this.orderRepository = orderRepository;
+        this.menuRepository = menuRepository;
+        this.userRepository = userRepository;
+    }
 
 
-    public void addCart(CartRequestDto requestDto) {
-        Menu menu = menuRepository.findById(requestDto.getMenuId())
-                .orElseThrow(() -> new IllegalArgumentException("없는 메뉴입니다."));
-        Cart checkCart = cartRepository.findByMenuAndUserId(menu, requestDto.getUserId()).orElse(null);
+    public OrderResponseDto createOrder(long userId, List<OrderRequestDto> menuList) {
+//        User user = findUser(userId);
 
-        if (checkCart != null) {
-            checkCart.setMenuCount(checkCart.getMenuCount() + requestDto.getMenuCount());
+        List<String> menus = getMenus(menuList);
+        int totalPrice = getTotalPrice(menuList);
 
-            cartRepository.save(checkCart);
-        } else {
-            Cart cart = new Cart();
-            cart.setMenu(menu);
-            cart.setUserId(requestDto.getUserId());
-            cart.setMenuCount(requestDto.getMenuCount());
-            cartRepository.save(cart);
+        Order order = new Order();
+        order.setUserId(userId);
+//        order.setOrderStatus("orderStatus");
+        order.setMenuList(menus);
+        order.setTotalPrice(totalPrice);
+        order.setCreatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+        return OrderResponseDto.toDto(order);
+    }
+
+    //menuId로 메뉴 찾기
+    private Menu findMenuById(Long menuId) {
+        return menuRepository.findById(menuId).orElseThrow(() ->
+                new IllegalArgumentException("해당 메뉴을 찾을 수 없습니다."));
+    }
+
+    //주문 메뉴 목록
+    private List<String> getMenus(List<OrderRequestDto> menuList) {
+        List<String> menus = new ArrayList<>();
+        for (OrderRequestDto requestDto : menuList) {
+            Menu menu = findMenuById(requestDto.getMenuId());
+            String count = Integer.toString(requestDto.getMenuCount());
+            menus.add(menu.getMenuName() + " 수량: " + count );
         }
+        return menus;
     }
 
-    public List<CartResponseDto> getCart(long userId){
-        List<Cart> cart = cartRepository.findByUserId(userId);
-        return cart.stream()
-                .map(CartResponseDto::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public void updateCart(CartRequestDto requestDto) {
-        Menu menu = menuRepository.findById(requestDto.getMenuId())
-                .orElseThrow(() -> new IllegalArgumentException("없는 메뉴입니다."));
-
-        Cart checkCart = cartRepository.findByMenuAndUserId(menu, requestDto.getUserId()).orElseThrow(() ->
-                new IllegalArgumentException("장바구니에 담겨있지 않습니다."));
-
-        checkCart.setMenuCount(requestDto.getMenuCount());
-        cartRepository.save(checkCart);
-    }
-
-    public void deleteCart(CartRequestDto requestDto) {
-        Menu menu = menuRepository.findById(requestDto.getMenuId())
-                .orElseThrow(() -> new IllegalArgumentException("없는 메뉴입니다."));
-
-        Cart checkCart = cartRepository.findByMenuAndUserId(menu, requestDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("장바구니에 담겨있지 않습니다."));
-
-        cartRepository.delete(checkCart);
+    // 주문 총 가격
+    private int getTotalPrice(List<OrderRequestDto> menuList) {
+        int totalPrice = 0;
+        for (OrderRequestDto requestDto : menuList) {
+            Menu menu = findMenuById(requestDto.getMenuId());
+            int menuPrice = menu.getPrice();
+            int count = requestDto.getMenuCount();
+            totalPrice += menuPrice*count;
+        }
+        return totalPrice;
     }
 
 
-
+//    protected User findUser(long id) {
+//        return userRepository.findById(id)
+//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//    }
 }

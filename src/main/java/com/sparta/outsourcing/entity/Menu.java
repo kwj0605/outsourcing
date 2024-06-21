@@ -1,13 +1,9 @@
 package com.sparta.outsourcing.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -18,7 +14,7 @@ public class Menu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long menuId;
 
-    @JsonBackReference
+    //    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
@@ -29,11 +25,22 @@ public class Menu {
     @Column(nullable = false)
     private int price;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "menu", cascade = CascadeType.PERSIST, orphanRemoval = true)
-    private List<Cart> menuList = new ArrayList<>();
+    public Menu(Long menuId, String menuName, int price) {
+        this.menuId = menuId;
+        this.menuName = menuName;
+        this.price = price;
+    }
 
-    public void setMenuList(List<Cart> menuList) {
-        this.menuList = menuList;
+    public void setMenuId(Long menuId) {
+        this.menuId = menuId;
+    }
+
+    public void setMenuName(String menuName) {
+        this.menuName = menuName;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 }
+
