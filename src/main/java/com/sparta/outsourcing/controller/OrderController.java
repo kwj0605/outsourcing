@@ -23,4 +23,9 @@ public class OrderController {
         OrderResponseDto responseDto = orderService.createOrder(userId, menuList);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
+
+    @GetMapping
+    public List<OrderResponseDto> getOrders() {
+        return orderService.getOrders();
+    }
 }

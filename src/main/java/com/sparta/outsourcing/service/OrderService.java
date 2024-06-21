@@ -26,7 +26,7 @@ public class OrderService {
         this.userRepository = userRepository;
     }
 
-
+    // 주문 등록
     public OrderResponseDto createOrder(long userId, List<OrderRequestDto> menuList) {
 //        User user = findUser(userId);
 
@@ -41,6 +41,10 @@ public class OrderService {
         order.setCreatedAt(LocalDateTime.now());
         orderRepository.save(order);
         return OrderResponseDto.toDto(order);
+    }
+
+    public List<OrderResponseDto> getOrders() {
+        return orderRepository.findAll().stream().map(OrderResponseDto::toDto).toList();
     }
 
     //menuId로 메뉴 찾기
