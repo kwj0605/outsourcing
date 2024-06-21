@@ -6,6 +6,7 @@ import com.sparta.outsourcing.dto.UserDto;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RestaurantController {
 
+    @Autowired
     RestaurantService restaurantService;
 
     @PostMapping

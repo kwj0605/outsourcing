@@ -4,6 +4,7 @@ import com.sparta.outsourcing.dto.LikeResponseDto;
 import com.sparta.outsourcing.enums.ContentTypeEnum;
 import com.sparta.outsourcing.service.LikeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LikeController {
 
+    @Autowired
     private final LikeService likeService;
 
     @PutMapping("/{contentType}/{contentId}")

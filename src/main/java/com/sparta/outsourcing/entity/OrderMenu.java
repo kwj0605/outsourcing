@@ -26,6 +26,10 @@ public class OrderMenu {
     @Column(nullable = false)
     private int quantity;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     public OrderMenu(Menu menu, Order order, int quantity) {
         this.menu = menu;
         this.order = order;

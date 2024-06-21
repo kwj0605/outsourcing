@@ -51,7 +51,7 @@ public class User extends Timestamped {
     private boolean expired = false;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderMenu> carts;
+    private List<OrderMenu> orderMenus = new ArrayList<>();
 
     public User(String username, String password, String nickname, String userinfo, UserRoleEnum role) {
         this.username = username;
