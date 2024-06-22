@@ -7,6 +7,7 @@ import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import static com.sparta.outsourcing.enums.UserStatusEnum.DENIED;
 
@@ -23,11 +26,12 @@ import static com.sparta.outsourcing.enums.UserStatusEnum.DENIED;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    public static final String AUTHORIZATION_HEADER = "Authorization";
 
     public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
-        setFilterProcessesUrl("/api/users/login");
+        setFilterProcessesUrl("/api/auth/login");
     }
 
     @Override
@@ -36,18 +40,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try{
             LoginRequestDto loginRequestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
-            User user = userRepository.findByUsername(loginRequestDto.getUsername()).orElseThrow(NullPointerException::new);
-            if(user.getStatus() == DENIED){
-                log.info("삭제된 사용자입니다");
-                throw new IllegalArgumentException("삭제된 사용자입니다.");
+            User user = userRepository.findByUsername(loginRequestDto.getUsername()).orElse(null);
+            if(null != user) {
+                if(user.getStatus() == DENIED){
+                    log.info("삭제된 사용자입니다");
+                    throw new IllegalArgumentException("삭제된 사용자입니다.");
+                }
             }
-
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequestDto.getUsername(),
                             loginRequestDto.getPassword(),
                             null
-
                     )
             );
         } catch (IOException e) {
@@ -70,9 +74,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         userRepository.save(user);
 
+
+
         // 헤더에 토큰 저장
         response.setHeader("Authorization", token);
         response.setHeader("RefreshToken", refreshToken);
+
+        addJwtToCookie(token, response);
         // 로그인 성공 메세지 반환
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString("로그인 성공!"));
@@ -82,5 +90,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
         response.setStatus(401);
+    }
+
+    public void addJwtToCookie(String token, HttpServletResponse res) {
+        try {
+            token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20");
+
+            Cookie cookie = new Cookie(AUTHORIZATION_HEADER, token); // Name-Value
+            cookie.setPath("/");
+
+            // Response 객체에 Cookie 추가
+            res.addCookie(cookie);
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getMessage());
+        }
     }
 }

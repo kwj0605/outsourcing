@@ -4,6 +4,7 @@ import com.sparta.outsourcing.dto.MenuDto;
 import com.sparta.outsourcing.dto.RestaurantDto;
 import com.sparta.outsourcing.entity.Menu;
 import com.sparta.outsourcing.entity.Restaurant;
+import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.repository.RestaurantRepository;
 import jakarta.transaction.Transactional;
@@ -23,8 +24,8 @@ public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final MenuRepository menuRepository;
 
-    public ResponseEntity<String> addRestaurant(RestaurantDto restaurantDto) {
-        Restaurant restaurant = new Restaurant(restaurantDto.getRestaurantName(), restaurantDto.getRestaurantInfo(), restaurantDto.getPhoneNumber());
+    public ResponseEntity<String> addRestaurant(RestaurantDto restaurantDto, User user) {
+        Restaurant restaurant = new Restaurant(user, restaurantDto.getRestaurantName(), restaurantDto.getRestaurantInfo(), restaurantDto.getPhoneNumber());
         restaurantRepository.save(restaurant);
 
         return ResponseEntity.ok("식당이 등록되었습니다.");

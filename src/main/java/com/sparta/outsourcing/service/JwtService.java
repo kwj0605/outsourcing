@@ -1,5 +1,6 @@
 package com.sparta.outsourcing.service;
 
+import com.sparta.outsourcing.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -7,23 +8,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.function.Function;
 
+@Service
 @Component
 public class JwtService {
 
     // 로그 설정
     public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
-
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    //    public static final String AUTHORIZATION_KEY = "auth";
     public static final String BEARER_PREFIX = "Bearer ";
     private final long TOKEN_TIME = 30 * 60 * 1000L; // 30분
     private final long REFRESH_TOKEN_TIME = 14 * 24* 60 * 60 * 1000L; // 2주
+
 
     @Value("${jwt.secret.key}")
     private String secretKey;
@@ -43,10 +45,10 @@ public class JwtService {
 
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(userId)
-                        .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-                        .setIssuedAt(date)
-                        .signWith(signatureAlgorithm, key)
+                        .claim("username", userId) // 사용자 식별자값(ID)
+                        .setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 만료 시간
+                        .setIssuedAt(date) // 발급일
+                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                         .compact();
     }
 
@@ -89,5 +91,18 @@ public class JwtService {
 
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+    }
+
+    public String extractUserId(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
     }
 }

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Entity
 @NoArgsConstructor
@@ -21,15 +23,18 @@ public class Review extends Timestamped {
     private Order order;
 
     @Column(nullable = false)
-    private Long like = 0L;
+    private Long likes = 0L;
 
     @Column(nullable = false)
     private String content;
 
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> reviewLikes;
+
     public Long updateLike(boolean islike){
-        if(islike){this.like -= 1;}
-        else{this.like += 1;}
-        return this.like;
+        if(islike){this.likes += 1;}
+        else{this.likes -= 1;}
+        return this.likes;
     }
 
     public void update(String newContent){

@@ -3,11 +3,14 @@ package com.sparta.outsourcing.controller;
 import com.sparta.outsourcing.dto.MenuDto;
 import com.sparta.outsourcing.dto.RestaurantDto;
 import com.sparta.outsourcing.dto.UserDto;
+import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
+import com.sparta.outsourcing.security.UserDetailsImpl;
 import com.sparta.outsourcing.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +24,8 @@ public class RestaurantController {
     RestaurantService restaurantService;
 
     @PostMapping
-    public ResponseEntity<String> addRestaurant(@RequestBody RestaurantDto restaurantDto) {
-        return restaurantService.addRestaurant(restaurantDto);
+    public ResponseEntity<String> addRestaurant(@RequestBody RestaurantDto restaurantDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return restaurantService.addRestaurant(restaurantDto, userDetails.getUser());
     }
 
     @DeleteMapping("/{restaurantId}")

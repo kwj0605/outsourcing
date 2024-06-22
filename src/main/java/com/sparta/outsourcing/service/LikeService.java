@@ -1,14 +1,11 @@
 package com.sparta.outsourcing.service;
 
 import com.sparta.outsourcing.dto.LikeResponseDto;
-import com.sparta.outsourcing.entity.Like;
-import com.sparta.outsourcing.entity.Order;
-import com.sparta.outsourcing.entity.Restaurant;
-import com.sparta.outsourcing.entity.Review;
-import com.sparta.outsourcing.enums.ContentTypeEnum;
-import com.sparta.outsourcing.repository.LikeRepository;
-import com.sparta.outsourcing.repository.OrderRepository;
+import com.sparta.outsourcing.entity.*;
+import com.sparta.outsourcing.exception.LikeSelfException;
+import com.sparta.outsourcing.repository.RestaurantLikeRepository;
 import com.sparta.outsourcing.repository.RestaurantRepository;
+import com.sparta.outsourcing.repository.ReviewLikeRepository;
 import com.sparta.outsourcing.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,31 +16,51 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class LikeService {
 
-    private final LikeRepository likeRepository;
+    private final RestaurantLikeRepository restaurantLikeRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
     private final ReviewRepository reviewRepository;
-    private final OrderRepository orderRepository;
     private final RestaurantRepository restaurantRepository;
 
-    public LikeResponseDto updateLike(ContentTypeEnum contentType, Long contentId) {
-        Like like = likeRepository.findByContentTypeAndContentId(contentType, contentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당하는 좋아요 정보가 없습니다."));
-        LikeResponseDto likeResponseDto = calculateLike(like);
-        like.update();
-        likeRepository.save(like);
-        return likeResponseDto;
+    public LikeResponseDto updateRestaurantLike(Long contentId, User user) {
+
+        Restaurant restaurant = restaurantRepository.findById(contentId).orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+        if (user.getUsername().equals(restaurant.getUser().getUsername())) {
+            throw new LikeSelfException();
+        }
+
+        RestaurantLike restaurantLike = restaurantLikeRepository.findByUserAndRestaurant(user, restaurant)
+                .orElseGet(() -> new RestaurantLike(user, restaurant));
+
+        restaurantLike.update();
+        restaurantLikeRepository.save(restaurantLike);
+
+        return calculateRestaurantlike(restaurantLike, restaurant);
     }
 
-    private LikeResponseDto calculateLike(Like like) {
+    public LikeResponseDto updateReviewLike(Long contentId, User user) {
+        Review review = reviewRepository.findById(contentId).orElseThrow(() -> new RuntimeException("Review not found"));
 
-        Long cnt;
-
-        if (like.getContentType().equals(ContentTypeEnum.RESTAURANT)) {
-            Restaurant restaurant = restaurantRepository.findById(like.getContentId()).orElseThrow();
-            cnt =  restaurant.updateLike(like.isLiked());
-        } else {
-            Review review = reviewRepository.findById(like.getContentId()).orElseThrow();
-            cnt =review.updateLike(like.isLiked());
+        if (user.getUsername().equals(review.getUser().getUsername())) {
+            throw new LikeSelfException();
         }
-        return new LikeResponseDto(!like.isLiked(), cnt);
+
+        ReviewLike reviewLike = reviewLikeRepository.findByUserAndReview(user, review)
+                .orElseGet(() -> new ReviewLike(user, review));
+
+        reviewLike.update();
+        reviewLikeRepository.save(reviewLike);
+
+        return calculateReviewlike(reviewLike, review);
+    }
+
+    private LikeResponseDto calculateRestaurantlike(RestaurantLike restaurantLike, Restaurant restaurant) {
+        Long cnt =  restaurant.updateLike(restaurantLike.isLiked());
+        return new LikeResponseDto(restaurantLike.isLiked(), cnt);
+    }
+
+    public LikeResponseDto calculateReviewlike(ReviewLike reviewLike, Review review) {
+        Long cnt =  review.updateLike(reviewLike.isLiked());
+        return new LikeResponseDto(reviewLike.isLiked(), cnt);
     }
 }

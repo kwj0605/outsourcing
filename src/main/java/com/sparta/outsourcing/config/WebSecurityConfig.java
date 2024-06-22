@@ -1,18 +1,17 @@
 package com.sparta.outsourcing.config;
 
 import com.sparta.outsourcing.exception.CustomAuthenticationEntryPoint;
+import com.sparta.outsourcing.jwt.JwtUtil;
 import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.security.JwtAuthenticationFilter;
 import com.sparta.outsourcing.security.JwtAuthorizationFilter;
 import com.sparta.outsourcing.security.JwtRequestFilter;
 import com.sparta.outsourcing.security.UserDetailsServiceImpl;
-import com.sparta.outsourcing.service.JwtBlacklistService;
 import com.sparta.outsourcing.service.JwtService;
-import com.sparta.outsourcing.service.UserService;
-import jakarta.servlet.Filter;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,21 +21,22 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableJpaAuditing
 @EnableWebSecurity
 public class WebSecurityConfig {
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final UserRepository userRepository;
-    private final JwtBlacklistService jwtBlacklistService;
+    private final JwtUtil jwtUtil;
 
     public WebSecurityConfig(JwtService jwtService, UserDetailsServiceImpl userDetailsService,
-                             AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository, JwtBlacklistService jwtBlacklistService, UserService userService) {
+                             AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository, JwtUtil jwtUtil) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
         this.authenticationConfiguration = authenticationConfiguration;
         this.userRepository = userRepository;
-        this.jwtBlacklistService = jwtBlacklistService;
+        this.jwtUtil = jwtUtil;
     }
 
     @Bean
@@ -58,7 +58,7 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtRequestFilter jwtRequestFilter() {
-        return new JwtRequestFilter(jwtBlacklistService, jwtService);
+        return new JwtRequestFilter(jwtUtil, userDetailsService);
     }
 
     @Bean
@@ -75,7 +75,7 @@ public class WebSecurityConfig {
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/api/user/sign-up").permitAll()
-                        .requestMatchers("/api/user/login").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/refresh-token").permitAll()
                         // 서버 단에서 에러가 발생시 아래 url이 에러창을 띄워준다
                         .requestMatchers("/error").permitAll()

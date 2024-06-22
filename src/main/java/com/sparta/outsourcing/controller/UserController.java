@@ -3,14 +3,14 @@ package com.sparta.outsourcing.controller;
 import com.sparta.outsourcing.dto.CustomUserDetails;
 import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.dto.UserDto;
-import com.sparta.outsourcing.entity.User;
+import com.sparta.outsourcing.dto.login.LoginRequestDto;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,13 +29,22 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<String> signUp(@RequestBody UserDto userDto , UserRoleEnum userRoleEnum) {
-        return userService.signUp(userDto, userRoleEnum);
+    public ResponseEntity<String> signUp(@RequestBody UserDto userDto) {
+        return userService.signUp(userDto);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> authenticateUser(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+        System.out.println("로그인 요청 수신: " + loginRequestDto.getUsername());
+        userService.login(loginRequestDto, response);
+        return ResponseEntity.ok("로그인에 성공하였습니다.");
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<ProfileDto> getProfile(@PathVariable Long userId) {
         return userService.getProfile(userId);
     }
+
     @PatchMapping("/{userId}")
     public ResponseEntity<String> updateProfile(@PathVariable("userId") Long userId,
             CustomUserDetails user ,ProfileDto profileDto) {

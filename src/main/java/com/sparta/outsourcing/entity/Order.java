@@ -9,19 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
+@Table(name = "orders") // 'orders'로 테이블명 변경
 public class Order extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="userId", nullable = false)
+    @JoinColumn(name="user_id", nullable = false) // 카멜케이스 사용, 외래키명 변경
     private User user;
 
     @ManyToOne
-    @JoinColumn(name="restaurantId", nullable = false)
+    @JoinColumn(name="restaurant_id", nullable = false) // 카멜케이스 사용, 외래키명 변경
     private Restaurant restaurant;
 
     @Column(nullable = false)
@@ -30,11 +32,10 @@ public class Order extends Timestamped {
     @Column(nullable = false)
     private String payType;
 
-    @Setter
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true) // orphanRemoval 추가
     private List<OrderMenu> orderMenus = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "order_status") // 'order_status'로 컬럼명 변경
     private String orderStatus;
 
     public Order(User user, Restaurant restaurant, int totalPrice, String payType) {

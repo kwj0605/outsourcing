@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class OrderMenu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cartId;
+    private Long id;
 
     @JsonBackReference
     @ManyToOne
@@ -27,7 +27,7 @@ public class OrderMenu {
     private int quantity;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public OrderMenu(Menu menu, Order order, int quantity) {

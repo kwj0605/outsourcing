@@ -16,7 +16,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Table(name = "users")
 public class User extends Timestamped {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,13 +29,13 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private String nickname;
 
+    @Column(nullable = false)
     private String userinfo;
 
     @Setter
     @Column(nullable = false)
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
 
-    @Setter
     @Column(nullable = false)
     private UserRoleEnum role;
 
@@ -52,6 +51,9 @@ public class User extends Timestamped {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderMenu> orderMenus = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> reviewLikes = new ArrayList<>();
 
     public User(String username, String password, String nickname, String userinfo, UserRoleEnum role) {
         this.username = username;
@@ -69,7 +71,7 @@ public class User extends Timestamped {
         setDeniedPassword(profileDto.getPassword());
     }
 
-    //최근 변경한 비밀번호 저장
+    // 최근 변경한 비밀번호 저장
     private void setDeniedPassword(String password){
         if(deniedPassword.size() > 2){
             deniedPassword.remove(0);
@@ -77,8 +79,9 @@ public class User extends Timestamped {
         deniedPassword.add(password);
     }
 
-    //삭제처리
+    // 삭제처리
     public void deleteUser() {
-        this.status = UserStatusEnum.DENIED;
+
     }
+
 }

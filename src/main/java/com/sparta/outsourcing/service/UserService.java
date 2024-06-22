@@ -3,12 +3,17 @@ package com.sparta.outsourcing.service;
 
 import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.dto.UserDto;
+import com.sparta.outsourcing.dto.login.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.repository.UserRepository;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +27,13 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
     //주문 리포지토리
-    public ResponseEntity<String> signUp(UserDto userDto, UserRoleEnum userRoleEnum) {
+    public ResponseEntity<String> signUp(UserDto userDto) {
         User user = new User(
                 userDto.getUsername(),
                 bCryptPasswordEncoder.encode(userDto.getPassword()),
                 userDto.getNickname(),
                 userDto.getUserinfo(),
-                userRoleEnum
+                userDto.getRole()
         );
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body("가입 완료");
@@ -100,5 +105,14 @@ public class UserService {
             }
         }
         return false;
+    }
+
+    public void login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
+        User user = userRepository.findByUsername(loginRequestDto.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+
+        if (!bCryptPasswordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
     }
 }
