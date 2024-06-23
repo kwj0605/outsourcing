@@ -5,6 +5,7 @@ import com.sparta.outsourcing.dto.UpdateContentDto;
 import com.sparta.outsourcing.entity.Order;
 import com.sparta.outsourcing.entity.Review;
 import com.sparta.outsourcing.entity.User;
+import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.repository.OrderRepository;
 import com.sparta.outsourcing.repository.ReviewRepository;
 import com.sparta.outsourcing.security.UserDetailsImpl;
@@ -49,7 +50,7 @@ public class ReviewService {
         if (optionalReview.isPresent()) {
             Review review = optionalReview.get();
 
-            if (review.getUser().getUsername().equals(user.getUsername())) {
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
                 review.update(reviewDto.getContent());
                 reviewRepository.save(review);
                 return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
@@ -67,7 +68,7 @@ public class ReviewService {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
         if (optionalReview.isPresent()) {
             Review review = optionalReview.get();
-            if (review.getUser().getUsername().equals(user.getUsername())) {
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
                 reviewRepository.delete(review);
                 return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
             } else {
