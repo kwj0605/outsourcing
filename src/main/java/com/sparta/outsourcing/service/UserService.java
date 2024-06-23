@@ -6,13 +6,16 @@ import com.sparta.outsourcing.dto.UserDto;
 import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
+import com.sparta.outsourcing.exception.AlreadySignupException;
 import com.sparta.outsourcing.repository.UserRepository;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,14 +27,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
-    //주문 리포지토리
+    private final MessageSource messageSource;
+
     public ResponseEntity<String> signUp(UserDto userDto) {
+
+        Optional<User> checkUsername = userRepository.findByUsername(userDto.getUsername());
+        if (checkUsername.isPresent()) {
+            throw new AlreadySignupException(messageSource.getMessage(
+                    "already.exist", null, "중복된 사용자가 존재합니다.", Locale.getDefault()
+            ));
+        }
+
         User user = new User(
-                userDto.getUsername(),
-                bCryptPasswordEncoder.encode(userDto.getPassword()),
-                userDto.getNickname(),
-                userDto.getUserinfo(),
-                userDto.getRole()
+                userDto.getUsername(), bCryptPasswordEncoder.encode(userDto.getPassword()),
+                userDto.getNickname(), userDto.getUserinfo(), userDto.getRole()
         );
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body("가입 완료");
