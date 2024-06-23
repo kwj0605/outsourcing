@@ -32,11 +32,10 @@ public class UserController {
         return userService.signUp(userDto);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
-        System.out.println("로그인 요청 수신: " + loginRequestDto.getUsername());
-        userService.login(loginRequestDto, response);
-        return ResponseEntity.ok("로그인에 성공하였습니다.");
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        userService.logout(response);
+        return ResponseEntity.ok("로그아웃되었습니다.");
     }
 
     @GetMapping("/{userId}")

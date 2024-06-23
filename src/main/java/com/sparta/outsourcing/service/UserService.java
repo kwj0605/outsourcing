@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -28,6 +29,7 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
     private final MessageSource messageSource;
+    private final JwtService jwtService;
 
     public ResponseEntity<String> signUp(UserDto userDto) {
 
@@ -114,12 +116,18 @@ public class UserService {
         return false;
     }
 
-    public void login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
-        User user = userRepository.findByUsername(loginRequestDto.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+    public void logout(HttpServletResponse response) {
+        Cookie accessToken = new Cookie(JwtService.AUTHORIZATION_HEADER, null);
+        Cookie refreshToken = new Cookie(JwtService.REFRESH_TOKEN_HEADER, null);
 
-        if (!bCryptPasswordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
+        accessToken.setPath("/");
+        refreshToken.setPath("/");
+
+        accessToken.setHttpOnly(true);
+        accessToken.setMaxAge(0);
+        refreshToken.setHttpOnly(true);
+        refreshToken.setMaxAge(0);
+        response.addCookie(accessToken);
+        response.addCookie(refreshToken);
     }
 }
