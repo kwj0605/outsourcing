@@ -12,10 +12,10 @@ public class RestaurantDto {
     private String phoneNumber;
     private Long likes;
 
-    public RestaurantDto(String restaurantName, String restaurantInfo, String phoneNumber) {
+    public RestaurantDto(String restaurantName, String restaurantInfo, String phoneNumber, Long likes) {
         this.restaurantName = restaurantName;
         this.restaurantInfo = restaurantInfo;
         this.phoneNumber = phoneNumber;
-        this.likes = 0L;
+        this.likes = likes;
     }
 }

@@ -2,6 +2,7 @@ package com.sparta.outsourcing.service;
 
 import com.sparta.outsourcing.dto.LikeResponseDto;
 import com.sparta.outsourcing.entity.*;
+import com.sparta.outsourcing.exception.AlreadySignupException;
 import com.sparta.outsourcing.exception.LikeSelfException;
 import com.sparta.outsourcing.repository.RestaurantLikeRepository;
 import com.sparta.outsourcing.repository.RestaurantRepository;
@@ -9,7 +10,10 @@ import com.sparta.outsourcing.repository.ReviewLikeRepository;
 import com.sparta.outsourcing.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
+
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -20,13 +24,16 @@ public class LikeService {
     private final ReviewLikeRepository reviewLikeRepository;
     private final ReviewRepository reviewRepository;
     private final RestaurantRepository restaurantRepository;
+    private final MessageSource messageSource;
 
     public LikeResponseDto updateRestaurantLike(Long contentId, User user) {
 
         Restaurant restaurant = restaurantRepository.findById(contentId).orElseThrow(() -> new RuntimeException("Restaurant not found"));
 
         if (user.getUsername().equals(restaurant.getUser().getUsername())) {
-            throw new LikeSelfException();
+            throw new LikeSelfException(messageSource.getMessage(
+                    "like.self", null, "본인이 작성한 컨텐츠에는 좋아요를 등록할 수 없습니다.", Locale.getDefault()
+            ));
         }
 
         RestaurantLike restaurantLike = restaurantLikeRepository.findByUserAndRestaurant(user, restaurant)
@@ -42,7 +49,9 @@ public class LikeService {
         Review review = reviewRepository.findById(contentId).orElseThrow(() -> new RuntimeException("Review not found"));
 
         if (user.getUsername().equals(review.getUser().getUsername())) {
-            throw new LikeSelfException();
+            throw new LikeSelfException(messageSource.getMessage(
+                    "like.self", null, "본인이 작성한 컨텐츠에는 좋아요를 등록할 수 없습니다.", Locale.getDefault()
+            ));
         }
 
         ReviewLike reviewLike = reviewLikeRepository.findByUserAndReview(user, review)

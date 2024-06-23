@@ -20,8 +20,20 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({AlreadySignupException.class})
-    public ResponseEntity<RestApiException> notFoundProductExceptionHandler(AlreadySignupException ex) {
+    public ResponseEntity<RestApiException> AlreadySignupExceptionHandler(AlreadySignupException ex) {
         RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(restApiException, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({LikeSelfException.class})
+    public ResponseEntity<RestApiException> LikeSelfExceptionHandler(LikeSelfException ex) {
+        RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(restApiException, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({InvalidAccessException.class})
+    public ResponseEntity<RestApiException> InvalidAccessExceptionHandler(InvalidAccessException ex) {
+        RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(restApiException, HttpStatus.UNAUTHORIZED);
     }
 }

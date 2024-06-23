@@ -38,6 +38,14 @@ public class RestaurantController {
         return restaurantService.getRestaurant(restaurantId);
     }
 
+    @GetMapping
+    public ResponseEntity<List<RestaurantDto>> getAllRestaurants(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size) {
+        return restaurantService.getAllRestaurants(page, size);
+    }
+
+
     @GetMapping("/{restaurantId}/menu")
     public ResponseEntity<List<MenuDto>> getMenuList(@PathVariable Long restaurantId) {
         return restaurantService.getMenuList(restaurantId);
