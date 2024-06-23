@@ -65,7 +65,7 @@ public class RestaurantService {
         if (optionalRestaurant.isPresent()) {
             Restaurant restaurant = optionalRestaurant.get();
 
-            Menu menu = new Menu(menuDto.getRestaurant(), menuDto.getMenuName(), menuDto.getPrice());
+            Menu menu = new Menu(restaurant, menuDto.getMenuName(), menuDto.getPrice());
 
             if (restaurant.getMenuList() == null) {
                 restaurant.setMenuList(new ArrayList<>());
@@ -101,7 +101,7 @@ public class RestaurantService {
             List<MenuDto> menuDtoList = new ArrayList<>();
 
             for (Menu menu : menuList) {
-                MenuDto menuDto = new MenuDto(menu.getRestaurant(), menu.getMenuName(), menu.getPrice());
+                MenuDto menuDto = new MenuDto(menu.getMenuName(), menu.getPrice());
                 menuDtoList.add(menuDto);
             }
 

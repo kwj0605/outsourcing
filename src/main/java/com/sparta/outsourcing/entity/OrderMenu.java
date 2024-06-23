@@ -30,7 +30,8 @@ public class OrderMenu {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public OrderMenu(Menu menu, Order order, int quantity) {
+    public OrderMenu(User user, Menu menu, Order order, int quantity) {
+        this.user = user;
         this.menu = menu;
         this.order = order;
         this.quantity = quantity;

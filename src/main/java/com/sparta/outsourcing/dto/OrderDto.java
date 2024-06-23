@@ -8,7 +8,6 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderDto {
-    private Long userId;
     private Long restaurantId;
     private String payType;
     private List<OrderMenuDto> orderMenus;

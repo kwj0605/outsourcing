@@ -2,15 +2,16 @@ package com.sparta.outsourcing.dto;
 
 import com.sparta.outsourcing.entity.Restaurant;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class MenuDto {
-    private final Restaurant restaurant;
-    private final String menuName;
-    private final Long price;
 
-    public MenuDto(Restaurant restaurant, String menuName, Long price) {
-        this.restaurant = restaurant;
+    private String menuName;
+    private Long price;
+
+    public MenuDto(String menuName, Long price) {
         this.menuName = menuName;
         this.price = price;
     }

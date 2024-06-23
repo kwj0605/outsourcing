@@ -21,7 +21,7 @@ public class ReviewLike extends Timestamped {
     private Review review;
 
     @Column(nullable = false)
-    private boolean Liked = false;
+    private boolean Liked;
 
     public ReviewLike(User user, Review review) {
         this.user = user;

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -29,7 +30,13 @@ public class Review extends Timestamped {
     private String content;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewLike> reviewLikes;
+    private List<ReviewLike> reviewLikes = new ArrayList<>();
+
+    public Review(User user, Order order, String content) {
+        this.user = user;
+        this.order = order;
+        this.content = content;
+    }
 
     public Long updateLike(boolean islike){
         if(islike){this.likes += 1;}
