@@ -16,6 +16,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,7 +49,7 @@ public class RestaurantService {
         Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
         if (optionalRestaurant.isPresent()) {
             Restaurant restaurant = optionalRestaurant.get();
-            if (restaurant.getUser().equals(user) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+            if (restaurant.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
                 restaurantRepository.delete(restaurant);
                 return ResponseEntity.ok("식당 정보가 삭제되었습니다.");
             } else {
@@ -56,7 +57,7 @@ public class RestaurantService {
                         "invalid.access", null, "적합하지 않은 접근입니다.", Locale.getDefault()));
             }
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("식당 정보가 존재하지 않습니다.");
         }
     }
 

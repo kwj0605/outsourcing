@@ -24,12 +24,12 @@ public class RestaurantController {
     }
 
     @DeleteMapping("/{restaurantId}")
-    public ResponseEntity<String> deleteRestaurant(@RequestBody Long restaurantId) {
+    public ResponseEntity<String> deleteRestaurant(@PathVariable("restaurantId") Long restaurantId) {
         return restaurantService.deleteRestaurant(restaurantId);
     }
 
     @GetMapping("/{restaurantId}")
-    public ResponseEntity<RestaurantDto> getRestaurant(@PathVariable Long restaurantId) {
+    public ResponseEntity<RestaurantDto> getRestaurant(@PathVariable("restaurantId") Long restaurantId) {
         return restaurantService.getRestaurant(restaurantId);
     }
 

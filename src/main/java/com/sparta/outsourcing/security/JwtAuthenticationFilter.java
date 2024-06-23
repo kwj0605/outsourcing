@@ -3,6 +3,7 @@ package com.sparta.outsourcing.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
+import com.sparta.outsourcing.enums.UserStatusEnum;
 import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.service.JwtService;
 import jakarta.servlet.FilterChain;
