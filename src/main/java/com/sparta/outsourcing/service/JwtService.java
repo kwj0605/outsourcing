@@ -52,6 +52,7 @@ public class JwtService {
 
         return BEARER_PREFIX +
                 Jwts.builder()
+                        .setSubject(username) // subject 설정
                         .claim("username", username) // 사용자 식별자값(ID)
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 만료 시간
                         .setIssuedAt(date) // 발급일
@@ -64,6 +65,7 @@ public class JwtService {
 
         return BEARER_PREFIX +
                 Jwts.builder()
+                        .setSubject(username)
                         .claim("username", username)
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME))
                         .setIssuedAt(date)
@@ -101,7 +103,7 @@ public class JwtService {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractClaim(token, claims -> claims.get("username", String.class));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

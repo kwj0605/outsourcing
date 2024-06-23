@@ -12,15 +12,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RestApiException> illegalArgumentExceptionHandler(IllegalArgumentException ex) {
         RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(
-                // HTTP body
                 restApiException,
-                // HTTP status code
-                HttpStatus.BAD_REQUEST
-        );
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({AlreadySignupException.class})
     public ResponseEntity<RestApiException> AlreadySignupExceptionHandler(AlreadySignupException ex) {
+        RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(restApiException, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({SignUpFailureException.class})
+    public ResponseEntity<RestApiException> SignUpFailureExceptionHandler(SignUpFailureException ex) {
         RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(restApiException, HttpStatus.BAD_REQUEST);
     }
