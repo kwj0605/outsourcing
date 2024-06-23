@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(restApiException, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({UserNotFoundException.class})
+    public ResponseEntity<RestApiException> UserNotFoundExceptionHandler(UserNotFoundException ex) {
+        RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(restApiException, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler({LikeSelfException.class})
     public ResponseEntity<RestApiException> LikeSelfExceptionHandler(LikeSelfException ex) {
         RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
