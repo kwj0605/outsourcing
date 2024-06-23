@@ -3,16 +3,14 @@ package com.sparta.outsourcing.service;
 
 import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.dto.UserDto;
-import com.sparta.outsourcing.dto.login.LoginRequestDto;
+import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.repository.UserRepository;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

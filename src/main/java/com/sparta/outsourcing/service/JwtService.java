@@ -1,9 +1,11 @@
 package com.sparta.outsourcing.service;
 
-import com.sparta.outsourcing.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -25,6 +30,8 @@ public class JwtService {
     public static final String BEARER_PREFIX = "Bearer ";
     private final long TOKEN_TIME = 30 * 60 * 1000L; // 30분
     private final long REFRESH_TOKEN_TIME = 14 * 24* 60 * 60 * 1000L; // 2주
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String REFRESH_TOKEN_HEADER = "RefreshToken";
 
 
     @Value("${jwt.secret.key}")
@@ -40,27 +47,27 @@ public class JwtService {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createToken(String userId) {
+    public String createToken(String username) {
         Date date = new Date();
 
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .claim("username", userId) // 사용자 식별자값(ID)
+                        .claim("username", username) // 사용자 식별자값(ID)
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 만료 시간
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                         .compact();
     }
 
-    public String createRefreshToken(String userId) {
+    public String createRefreshToken(String username) {
         Date date = new Date();
 
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(userId)
+                        .claim("username", username)
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME))
                         .setIssuedAt(date)
-                        .signWith(signatureAlgorithm, key)
+                        .signWith(key, signatureAlgorithm)
                         .compact();
     }
 
@@ -93,7 +100,7 @@ public class JwtService {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-    public String extractUserId(String token) {
+    public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -104,5 +111,49 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+    }
+
+    public String getTokenFromRequest(HttpServletRequest req, String token) {
+        Cookie[] cookies = req.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(token)) {
+                    try {
+                        return URLDecoder.decode(cookie.getValue(), "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public void addJwtToCookie(String token, HttpServletResponse res, boolean isAccessToken) {
+        try {
+            Cookie cookie;
+            token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20");
+
+            if (isAccessToken) {
+                cookie = new Cookie(AUTHORIZATION_HEADER, token);
+            } else{
+                cookie = new Cookie(REFRESH_TOKEN_HEADER, token);
+            }
+
+            cookie.setPath("/");
+            res.addCookie(cookie);
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    public String getUsernameFromRequest(HttpServletRequest request) {
+        String token = getTokenFromRequest(request, AUTHORIZATION_HEADER);
+        if (token != null && token.startsWith(BEARER_PREFIX)) {
+            String tokenWithoutPrefix = token.substring(BEARER_PREFIX.length());
+            Claims claims = getUserInfoFromToken(tokenWithoutPrefix);
+            return claims.get("username", String.class);
+        }
+        return null;
     }
 }

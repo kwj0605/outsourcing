@@ -39,10 +39,6 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private UserRoleEnum role;
 
-    @Setter
-    @Column(name = "refresh_token")
-    private String refreshToken;
-
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> deniedPassword = new ArrayList<>(3);
 

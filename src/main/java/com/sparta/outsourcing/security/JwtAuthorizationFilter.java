@@ -1,7 +1,6 @@
 package com.sparta.outsourcing.security;
 
 import com.sparta.outsourcing.service.JwtService;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +21,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String REFRESH_TOKEN_HEADER = "RefreshToken";
 
     public JwtAuthorizationFilter(JwtService jwtService, UserDetailsServiceImpl userDetailsService) {
         this.jwtService = jwtService;
@@ -30,23 +31,34 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        //        String tokenValue = jwtUtil.getTokenFromRequest(req);
-        String tokenValue = request.getHeader("Authorization");
+        String accessToken = jwtService.getTokenFromRequest(request, AUTHORIZATION_HEADER);
+        String refreshToken = jwtService.getTokenFromRequest(request, REFRESH_TOKEN_HEADER);
 
-        if (StringUtils.hasText(tokenValue)) {
+        if (StringUtils.hasText(accessToken)) {
             // JWT 토큰 substring
-            tokenValue = jwtService.substringToken(tokenValue);
-            log.info(tokenValue);
+            accessToken = jwtService.substringToken(accessToken);
+            log.info(accessToken);
 
-            if (!jwtService.validateToken(tokenValue)) {
-                log.error("Token Error");
-                return;
+            // accessToken 만료 & refreshToken 유효한 경우
+            // 새로운 accessToken 발급
+            if (!jwtService.validateToken(accessToken)) {
+                if (refreshToken != null && jwtService.validateToken(refreshToken)){
+                    String username = jwtService.extractUsername(refreshToken);
+                    String newAccessToken = jwtService.createToken(username);
+
+                    response.setHeader(AUTHORIZATION_HEADER, newAccessToken);
+                    jwtService.addJwtToCookie(newAccessToken, response, true);
+                } else {
+                    log.error("Token Error");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
             }
 
-            Claims info = jwtService.getUserInfoFromToken(tokenValue);
+            String username = jwtService.getUsernameFromRequest(request);
 
             try {
-                setAuthentication(info.getSubject());
+                setAuthentication(username);
             } catch (Exception e) {
                 log.error(e.getMessage());
                 return;
@@ -61,7 +73,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication authentication = createAuthentication(userId);
         context.setAuthentication(authentication);
-
         SecurityContextHolder.setContext(context);
     }
 

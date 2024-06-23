@@ -1,13 +1,12 @@
 package com.sparta.outsourcing.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.outsourcing.dto.login.LoginRequestDto;
+import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +16,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 import static com.sparta.outsourcing.enums.UserStatusEnum.DENIED;
 
@@ -26,7 +23,6 @@ import static com.sparta.outsourcing.enums.UserStatusEnum.DENIED;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
-    public static final String AUTHORIZATION_HEADER = "Authorization";
 
     public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
@@ -63,24 +59,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
-        String userId = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
 
         // 토큰 생성
-        String token = jwtService.createToken(userId);
-        String refreshToken = jwtService.createRefreshToken(userId);
-        // refresh token 유저에 저장
-        User user = userRepository.findByUsername(userId).orElseThrow(NullPointerException::new);
-        user.setRefreshToken(refreshToken);
+        String accessToken = jwtService.createToken(username);
+        String refreshToken = jwtService.createRefreshToken(username);
 
-        userRepository.save(user);
+        jwtService.addJwtToCookie(accessToken, response, true);
+        jwtService.addJwtToCookie(refreshToken, response, false);
 
-
-
-        // 헤더에 토큰 저장
-        response.setHeader("Authorization", token);
-        response.setHeader("RefreshToken", refreshToken);
-
-        addJwtToCookie(token, response);
         // 로그인 성공 메세지 반환
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString("로그인 성공!"));
@@ -92,17 +79,4 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setStatus(401);
     }
 
-    public void addJwtToCookie(String token, HttpServletResponse res) {
-        try {
-            token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20");
-
-            Cookie cookie = new Cookie(AUTHORIZATION_HEADER, token); // Name-Value
-            cookie.setPath("/");
-
-            // Response 객체에 Cookie 추가
-            res.addCookie(cookie);
-        } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage());
-        }
-    }
 }

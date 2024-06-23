@@ -1,4 +1,4 @@
-package com.sparta.outsourcing.dto.login;
+package com.sparta.outsourcing.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

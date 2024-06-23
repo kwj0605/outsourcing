@@ -1,11 +1,9 @@
 package com.sparta.outsourcing.config;
 
 import com.sparta.outsourcing.exception.CustomAuthenticationEntryPoint;
-import com.sparta.outsourcing.jwt.JwtUtil;
 import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.security.JwtAuthenticationFilter;
 import com.sparta.outsourcing.security.JwtAuthorizationFilter;
-import com.sparta.outsourcing.security.JwtRequestFilter;
 import com.sparta.outsourcing.security.UserDetailsServiceImpl;
 import com.sparta.outsourcing.service.JwtService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -28,15 +26,13 @@ public class WebSecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
 
     public WebSecurityConfig(JwtService jwtService, UserDetailsServiceImpl userDetailsService,
-                             AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository, JwtUtil jwtUtil) {
+                             AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
         this.authenticationConfiguration = authenticationConfiguration;
         this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
     }
 
     @Bean
@@ -54,11 +50,6 @@ public class WebSecurityConfig {
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
         return new JwtAuthorizationFilter(jwtService, userDetailsService);
-    }
-
-    @Bean
-    public JwtRequestFilter jwtRequestFilter() {
-        return new JwtRequestFilter(jwtUtil, userDetailsService);
     }
 
     @Bean
@@ -87,10 +78,8 @@ public class WebSecurityConfig {
         });
 
         // 필터 관리
-        http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(jwtRequestFilter(), JwtAuthorizationFilter.class);
-
+        http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
         return http.build();
     }
 }
