@@ -33,7 +33,7 @@ public class Order extends Timestamped{
 
     private String orderStatus;
 
-    @ElementCollection
+    @ElementCollection // 컬렉션 객체임을 알려줌
     @CollectionTable(name = "menu_order", joinColumns = @JoinColumn(name = "order_id"))
     @Column(name = "menu_count")
     private List<String> menuList = new ArrayList<>();

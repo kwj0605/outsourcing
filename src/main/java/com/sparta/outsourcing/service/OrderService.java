@@ -7,6 +7,10 @@ import com.sparta.outsourcing.entity.Order;
 import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.repository.OrderRepository;
 import com.sparta.outsourcing.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +47,38 @@ public class OrderService {
         return OrderResponseDto.toDto(order);
     }
 
-    public List<OrderResponseDto> getOrders() {
-        return orderRepository.findAll().stream().map(OrderResponseDto::toDto).toList();
+    // 모든 주문 조회
+    public Page<OrderResponseDto> getOrders(int page, int size, String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+        return orderPage.map(OrderResponseDto::toDto);
+    }
+
+    // 특정 주문 조회
+    public List<OrderResponseDto> getOrder(long orderId) {
+        return orderRepository.findById(orderId).stream().map(OrderResponseDto::toDto).toList();
+    }
+
+    // 주문 수정
+    public OrderResponseDto updateOrder(long orderId, List<OrderRequestDto> menuList) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        List<String> menus = getMenus(menuList);
+        int totalPrice = getTotalPrice(menuList);
+
+        order.setMenuList(menus);
+        order.setTotalPrice(totalPrice);
+        order.setModifiedAt(LocalDateTime.now());
+        orderRepository.save(order);
+        return OrderResponseDto.toDto(order);
+    }
+
+    // 주문 삭제
+    public void deleteOrder(long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+        orderRepository.delete(order);
     }
 
     //menuId로 메뉴 찾기
@@ -52,6 +86,7 @@ public class OrderService {
         return menuRepository.findById(menuId).orElseThrow(() ->
                 new IllegalArgumentException("해당 메뉴을 찾을 수 없습니다."));
     }
+
 
     //주문 메뉴 목록
     private List<String> getMenus(List<OrderRequestDto> menuList) {
@@ -64,17 +99,17 @@ public class OrderService {
         return menus;
     }
 
+
     // 주문 총 가격
     private int getTotalPrice(List<OrderRequestDto> menuList) {
         int totalPrice = 0;
         for (OrderRequestDto requestDto : menuList) {
             Menu menu = findMenuById(requestDto.getMenuId());
-            int menuPrice = menu.getPrice();
-            int count = requestDto.getMenuCount();
-            totalPrice += menuPrice*count;
+            totalPrice += menu.getPrice()*requestDto.getMenuCount();
         }
         return totalPrice;
     }
+
 
 
 //    protected User findUser(long id) {
