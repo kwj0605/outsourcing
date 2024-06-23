@@ -53,7 +53,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ProfileDto> getProfile(@PathVariable Long userId) {
+    public ResponseEntity<ProfileDto> getProfile(@PathVariable("userId") Long userId) {
         return userService.getProfile(userId);
     }
 

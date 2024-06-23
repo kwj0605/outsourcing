@@ -39,7 +39,6 @@ public class UserService {
                     "already.exist", null, "중복된 사용자가 존재합니다.", Locale.getDefault()
             ));
         }
-
         User user = new User(
                 userDto.getUsername(), bCryptPasswordEncoder.encode(userDto.getPassword()),
                 userDto.getNickname(), userDto.getUserinfo(), userDto.getRole()
@@ -50,13 +49,13 @@ public class UserService {
 
     public ResponseEntity<ProfileDto> getProfile(Long userId) {
         Optional<User> user = userRepository.findById(userId);
-        ProfileDto profileDto = new ProfileDto(
-                user.get().getNickname(),
-                user.get().getUserinfo()
-        );
-        return ResponseEntity.status(HttpStatus.OK).body(profileDto);
+        if (user.isPresent()) {
+            ProfileDto profileDto = new ProfileDto(user.get().getNickname(), user.get().getUserinfo());
+            return ResponseEntity.status(HttpStatus.OK).body(profileDto);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
-
 
     @Transactional
     public ResponseEntity<String> updateProfile(Long userId, User user, ProfileDto profileDto) {
