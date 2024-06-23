@@ -63,20 +63,26 @@ public class RestaurantService {
 
     public ResponseEntity<String> addMenuToRestaurant(Long restaurantId, MenuDto menuDto) {
         Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
+        User user = getUser();
         if (optionalRestaurant.isPresent()) {
             Restaurant restaurant = optionalRestaurant.get();
 
-            Menu menu = new Menu(restaurant, menuDto.getMenuName(), menuDto.getPrice());
+            if (restaurant.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+                Menu menu = new Menu(restaurant, menuDto.getMenuName(), menuDto.getPrice());
 
-            if (restaurant.getMenuList() == null) {
-                restaurant.setMenuList(new ArrayList<>());
+                if (restaurant.getMenuList() == null) {
+                    restaurant.setMenuList(new ArrayList<>());
+                }
+                restaurant.getMenuList().add(menu);
+
+                menuRepository.save(menu);
+                restaurantRepository.save(restaurant);
+
+                return ResponseEntity.ok("메뉴가 성공적으로 등록되었습니다.");
+            } else {
+                throw new InvalidAccessException(messageSource.getMessage(
+                        "invalid.access", null, "적합하지 않은 접근입니다.", Locale.getDefault()));
             }
-            restaurant.getMenuList().add(menu);
-
-            menuRepository.save(menu);
-            restaurantRepository.save(restaurant);
-
-            return ResponseEntity.ok("메뉴가 성공적으로 등록되었습니다.");
         } else {
             return ResponseEntity.notFound().build();
         }
