@@ -7,6 +7,7 @@ import com.sparta.outsourcing.dto.UserDto;
 import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
+import com.sparta.outsourcing.enums.UserStatusEnum;
 import com.sparta.outsourcing.exception.AlreadySignupException;
 import com.sparta.outsourcing.exception.UserNotFoundException;
 import com.sparta.outsourcing.repository.UserRepository;
@@ -96,11 +97,20 @@ public class UserService {
     }
 
 
-    public ResponseEntity<String> signOut(Long userId, User user) {
-        if(!validateUser(userId,user.getId())){
+    public ResponseEntity<String> signOut(Long userId, HttpServletResponse response) {
+
+        Optional<User> originUser = userRepository.findById(userId);
+        if (originUser.isEmpty() || originUser.get().getStatus().equals(UserStatusEnum.DENIED)) {
+            throw new UserNotFoundException("유저를 찾을 수 없습니다.");
+        }
+        User user = getUser();
+
+        if(!validateUser(userId, user.getId())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("다른 유저를 탈퇴할 수 없습니다.");
         }
-        userRepository.findById(userId).get().deleteUser();
+        user.setStatus(UserStatusEnum.DENIED);
+        userRepository.save(user);
+        logout(response);
         return ResponseEntity.status(HttpStatus.OK).body("탈퇴 완료");
     }
 

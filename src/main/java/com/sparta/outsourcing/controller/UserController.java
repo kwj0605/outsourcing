@@ -59,8 +59,8 @@ public class UserController {
     public ResponseEntity<String> updateProfile(@PathVariable("userId") Long userId, @Valid @RequestBody ProfileDto profileDto) {
         return userService.updateProfile(userId, profileDto);
     }
-//    @PostMapping("/{userId}/sign-out")
-//    public ResponseEntity<String> signOut(@PathVariable("userId") Long userId, CustomUserDetails user) {
-//        return userService.signOut(userId, user.getUser());
-//    }
+    @PostMapping("/signout/{userId}")
+    public ResponseEntity<String> signOut(@PathVariable("userId") Long userId, HttpServletResponse httpServletResponse) {
+        return userService.signOut(userId, httpServletResponse);
+    }
 }
