@@ -5,6 +5,7 @@ import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.security.JwtAuthenticationFilter;
 import com.sparta.outsourcing.security.JwtAuthorizationFilter;
 import com.sparta.outsourcing.security.UserDetailsServiceImpl;
+import com.sparta.outsourcing.service.AuthService;
 import com.sparta.outsourcing.service.JwtService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -59,7 +61,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthService authService) throws Exception {
         // CSRF 설정
         http.csrf((csrf) -> csrf.disable());
 
@@ -82,7 +84,11 @@ public class WebSecurityConfig {
         http.exceptionHandling(auth -> {
             auth.authenticationEntryPoint(new CustomAuthenticationEntryPoint());
         });
-
+        http.logout(auth -> auth
+                .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(authService)
+                .logoutSuccessHandler(
+                        (((request, response, authentication) -> SecurityContextHolder.clearContext()))));
         // 필터 관리
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);

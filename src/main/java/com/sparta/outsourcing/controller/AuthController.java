@@ -1,19 +1,16 @@
 package com.sparta.outsourcing.controller;
 
-import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.dto.TokenDto;
 import com.sparta.outsourcing.enums.AuthEnum;
-import com.sparta.outsourcing.security.UserDetailsImpl;
 import com.sparta.outsourcing.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,6 +33,7 @@ public class AuthController {
      * @param response 새로운 토큰 세팅
      * @return 200 ok
      */
+
     @PostMapping("/reissue")
     public ResponseEntity<String> reissue(HttpServletRequest request,
             HttpServletResponse response) {
@@ -58,7 +56,7 @@ public class AuthController {
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) {
         authService.logout(request, response, authentication);
-        return ResponseEntity.ok("로그아웃완료");
+        return ResponseEntity.status(HttpStatus.OK).body("로그아웃완료");
     }
 
 
