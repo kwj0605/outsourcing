@@ -23,7 +23,6 @@ public class Order extends Timestamped{
     @ManyToOne
     @JoinColumn(name="user_id", nullable = false)
     private User user;
-//    private long userId;
 
     private int totalPrice;
 
