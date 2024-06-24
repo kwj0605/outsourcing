@@ -4,9 +4,11 @@ import com.sparta.outsourcing.dto.OrderRequestDto;
 import com.sparta.outsourcing.dto.OrderResponseDto;
 import com.sparta.outsourcing.entity.Menu;
 import com.sparta.outsourcing.entity.Order;
+import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.repository.OrderRepository;
 import com.sparta.outsourcing.repository.UserRepository;
+import com.sparta.outsourcing.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,14 +33,15 @@ public class OrderService {
     }
 
     // 주문 등록
-    public OrderResponseDto createOrder(long userId, List<OrderRequestDto> menuList) {
-//        User user = findUser(userId);
+    public OrderResponseDto createOrder(List<OrderRequestDto> menuList, UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
+
         checkRestaurant(menuList);
         List<String> menus = getMenus(menuList);
         int totalPrice = getTotalPrice(menuList);
 
         Order order = new Order();
-        order.setUserId(userId);
+        order.setUser(user);
 //        order.setOrderStatus("orderStatus");
         order.setMenuList(menus);
         order.setTotalPrice(totalPrice);
@@ -60,9 +63,15 @@ public class OrderService {
     }
 
     // 주문 수정
-    public OrderResponseDto updateOrder(long orderId, List<OrderRequestDto> menuList) {
+    public OrderResponseDto updateOrder(long orderId, List<OrderRequestDto> menuList, UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if (order.getUser().getId() != user.getId()) {
+            throw new IllegalArgumentException("주문한 사람만 수정할 수 있습니다");
+        }
 
         checkRestaurant(menuList);
         List<String> menus = getMenus(menuList);
@@ -76,9 +85,16 @@ public class OrderService {
     }
 
     // 주문 삭제
-    public void deleteOrder(long orderId) {
+    public void deleteOrder(long orderId, UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if (!Objects.equals(order.getUser().getId(), user.getId())) {
+            throw new IllegalArgumentException("주문한 사람만 삭제할 수 있습니다");
+        }
+
         orderRepository.delete(order);
     }
 

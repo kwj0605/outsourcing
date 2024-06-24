@@ -20,10 +20,9 @@ public class Order extends Timestamped{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
 
-    //    @ManyToOne
-//    @JoinColumn(name="user_id", nullable = false)
-//    private User user;
-    private long userId;
+    @ManyToOne
+    @JoinColumn(name="user_id", nullable = false)
+    private User user;
 
     private int totalPrice;
 

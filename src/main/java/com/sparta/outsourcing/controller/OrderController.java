@@ -2,10 +2,12 @@ package com.sparta.outsourcing.controller;
 
 import com.sparta.outsourcing.dto.OrderRequestDto;
 import com.sparta.outsourcing.dto.OrderResponseDto;
+import com.sparta.outsourcing.security.UserDetailsImpl;
 import com.sparta.outsourcing.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,9 +21,9 @@ public class OrderController {
         this.orderService = orderService;
     }
     // 주문 등록
-    @PostMapping("/{userId}")
-    public ResponseEntity<OrderResponseDto> createOrder(@PathVariable long userId, @RequestBody List<OrderRequestDto> menuList) {
-        OrderResponseDto responseDto = orderService.createOrder(userId, menuList);
+    @PostMapping
+    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
+        OrderResponseDto responseDto = orderService.createOrder(menuList, authentication);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
     // 모든 주문 조회
@@ -40,15 +42,15 @@ public class OrderController {
 
     // 주문 수정
     @PutMapping("/{orderId}")
-    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable long orderId, @RequestBody List<OrderRequestDto> menuList) {
-        OrderResponseDto responseDto = orderService.updateOrder(orderId, menuList);
+    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable long orderId, @RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
+        OrderResponseDto responseDto = orderService.updateOrder(orderId, menuList, authentication);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     // 주문 삭제
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<String> deleteOrder(@PathVariable long orderId) {
-        orderService.deleteOrder(orderId);
+    public ResponseEntity<String> deleteOrder(@PathVariable long orderId, @AuthenticationPrincipal UserDetailsImpl authentication) {
+        orderService.deleteOrder(orderId, authentication);
         return new ResponseEntity<String>("주문 삭제", HttpStatus.OK);
     }
 }
