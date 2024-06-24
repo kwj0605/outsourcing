@@ -77,7 +77,6 @@ public class User extends Timestamped {
 
     // 삭제처리
     public void deleteUser() {
-
     }
 
 }
