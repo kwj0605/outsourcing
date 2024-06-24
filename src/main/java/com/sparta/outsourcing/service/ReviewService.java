@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
@@ -50,8 +51,10 @@ public class ReviewService {
         }
     }
 
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+    public List<ReviewDto> getAllReviews() {
+        return reviewRepository.findAll().stream()
+                .map(ReviewDto::toDto)
+                .toList();
     }
 
     public ResponseEntity<String> updateReview(Long reviewId, ReviewDto reviewDto) {
