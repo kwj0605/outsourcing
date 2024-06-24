@@ -21,6 +21,7 @@ public class OrderController {
         this.orderService = orderService;
     }
     // 주문 등록
+    // body에 [{"menuId": 1,"menuCount":1}, {"menuId": 3, "menuCount":3}] 형식으로 입력하여 전달
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(@RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
         OrderResponseDto responseDto = orderService.createOrder(menuList, authentication);

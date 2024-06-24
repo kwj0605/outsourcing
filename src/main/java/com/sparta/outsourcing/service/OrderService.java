@@ -51,6 +51,7 @@ public class OrderService {
     }
 
     // 모든 주문 조회
+    // 한페이지에 5개씩, 생성일자 기준 최신순
     public Page<OrderResponseDto> getOrders(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
         Page<Order> orderPage = orderRepository.findAll(pageable);
@@ -104,7 +105,7 @@ public class OrderService {
                 new IllegalArgumentException("해당 메뉴을 찾을 수 없습니다."));
     }
 
-    // 다른 가게인지 체크
+    // 주문 메뉴들이 같은 가게인지 체크하여 같은 곳에서만 주문할 수 있도록
     private List<Long> checkRestaurant(List<OrderRequestDto> menuList) {
         List<Long> restaurants = new ArrayList<>();
         for (OrderRequestDto requestDto : menuList) {
@@ -118,7 +119,7 @@ public class OrderService {
     }
 
 
-    //주문 메뉴 목록
+    //주문 메뉴 목록 리스트로 받기
     private List<String> getMenus(List<OrderRequestDto> menuList) {
         List<String> menus = new ArrayList<>();
         for (OrderRequestDto requestDto : menuList) {
@@ -130,7 +131,7 @@ public class OrderService {
     }
 
 
-    // 주문 총 가격
+    // 주문 총 가격 구하기
     private int getTotalPrice(List<OrderRequestDto> menuList) {
         int totalPrice = 0;
         for (OrderRequestDto requestDto : menuList) {
@@ -139,11 +140,4 @@ public class OrderService {
         }
         return totalPrice;
     }
-
-
-
-//    protected User findUser(long id) {
-//        return userRepository.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-//    }
 }
