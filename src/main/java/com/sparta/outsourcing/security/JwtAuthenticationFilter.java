@@ -68,8 +68,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 }
             }
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    loginRequestDto.getUsername(),loginRequestDto.getPassword());
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+                    loginRequestDto.getUsername(), loginRequestDto.getPassword());
+            Authentication authentication = null;
+            try {
+                authentication = authenticationManager.authenticate(authenticationToken);
+            } catch (AuthenticationException e) {
+                log.error("인증 실패: {}", e.getMessage());
+                throw e;
+            }
             return authentication;
         } catch (IOException e) {
             log.error(e.getMessage());
