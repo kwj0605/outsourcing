@@ -24,8 +24,8 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@Valid  @RequestBody UserDto userDto, BindingResult bindingResult) {
+    @PostMapping("/signup/{roleId}")
+    public ResponseEntity<String> signUp(@PathVariable("roleId") Long roleId, @Valid  @RequestBody UserDto userDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
             StringBuilder errorMessage = new StringBuilder();
@@ -35,9 +35,8 @@ public class UserController {
             }
             throw new SignUpFailureException(errorMessage.toString().trim());
         }
-        return userService.signUp(userDto);
+        return userService.signUp(userDto, roleId);
     }
-
 
     @GetMapping("/{userId}")
     public ResponseEntity<ProfileResponseDto> getProfile(@PathVariable("userId") Long userId) {

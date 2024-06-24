@@ -15,19 +15,22 @@ import jakarta.annotation.PostConstruct;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class JwtService {
     private final long TOKEN_TIME = 30 * 60 * 1000L; // 30분
     private final long REFRESH_TOKEN_TIME = 14 * 24* 60 * 60 * 1000L; // 2주
 
-    private UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
     @Value("${jwt.secret.key}")
     private String secretKey;
 
@@ -63,6 +66,7 @@ public class JwtService {
                         .setExpiration(new Date(now + REFRESH_TOKEN_TIME))
                         .setIssuedAt(new Date(now))
                         .signWith(key, signatureAlgorithm)
+                        .setIssuer(authentication.getName())
                         .compact();
 
         return TokenDto.builder()
@@ -78,9 +82,11 @@ public class JwtService {
      * 토큰에서 유저 정보 추출
      */
     public Authentication getAuthentication(String token) {
-    String username = parseClaims(token).getSubject();
-    UserDetailsImpl userDetails = userDetailsService.loadUserByUsername(username);
-    return new UsernamePasswordAuthenticationToken(userDetails, "",
+    UserDetailsImpl userDetails = userDetailsService.loadUserByUsername(getUsername(token));
+    if (!userDetails.isAccountNonExpired()) {
+        throw new AccountExpiredException("만료된 토큰입니다.");
+    }
+    return new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(),
             userDetails.getAuthorities());
 }
 
@@ -127,5 +133,6 @@ private Claims parseClaims(String token) {
                 .getBody();
         return claims.getIssuer();
     }
+
 
 }

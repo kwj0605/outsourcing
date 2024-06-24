@@ -18,6 +18,5 @@ public class UserDto {
     @NotBlank(message = "필수로 입력해야됩니다.")
     private String nickname;
     private String userinfo;
-    private UserRoleEnum role;
 
 }

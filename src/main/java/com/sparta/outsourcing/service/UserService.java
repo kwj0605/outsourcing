@@ -36,7 +36,7 @@ public class UserService {
     private final MessageSource messageSource;
 
 
-    public ResponseEntity<String> signUp(UserDto userDto) {
+    public ResponseEntity<String> signUp(UserDto userDto, Long roleId) {
 
         Optional<User> checkUsername = userRepository.findByUsername(userDto.getUsername());
         if (checkUsername.isPresent()) {
@@ -46,8 +46,13 @@ public class UserService {
         }
         User user = new User(
                 userDto.getUsername(), bCryptPasswordEncoder.encode(userDto.getPassword()),
-                userDto.getNickname(), userDto.getUserinfo(), userDto.getRole()
-        );
+                userDto.getNickname(), userDto.getUserinfo());
+        if(roleId == 1L){
+            user.setRole(UserRoleEnum.USER);
+        }else if(roleId == 2L){
+            user.setRole(UserRoleEnum.ADMIN);
+        }else {return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 권한입니다.");}
+
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body("가입 완료");
     }

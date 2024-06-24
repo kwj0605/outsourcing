@@ -12,7 +12,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,9 +22,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import org.springframework.stereotype.Component;
 
 import static com.sparta.outsourcing.enums.UserStatusEnum.DENIED;
 
+@Order(Integer.MIN_VALUE)
+@Component
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtService jwtService;
@@ -63,8 +68,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
-//        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
         TokenDto jwtToken = jwtService.createToken(authResult);
+        Optional<User> user = userRepository.findByUsername(userDetails.getUsername());
+        user.get().updateRefreshToken(jwtToken.getRefreshToken());
+        userRepository.save(user.get());
         response.setHeader(AuthEnum.ACCESS_TOKEN.getValue(), jwtToken.getAccessToken());
         response.setHeader(AuthEnum.REFRESH_TOKEN.getValue(), jwtToken.getRefreshToken());
         response.setStatus(200);

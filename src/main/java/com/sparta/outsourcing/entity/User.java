@@ -36,12 +36,14 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
 
+    @Setter
     @Column(nullable = false)
     private UserRoleEnum role;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> deniedPassword = new ArrayList<>(3);
 
+    @Column(nullable = true)
     private String refreshtoken;
 
     @Setter
@@ -54,12 +56,11 @@ public class User extends Timestamped {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewLike> reviewLikes = new ArrayList<>();
 
-    public User(String username, String password, String nickname, String userinfo, UserRoleEnum role) {
+    public User(String username, String password, String nickname, String userinfo) {
         this.username = username;
         this.password = password;
         this.nickname = nickname;
         this.userinfo = userinfo;
-        this.role = role;
     }
 
     // 프로필 저장

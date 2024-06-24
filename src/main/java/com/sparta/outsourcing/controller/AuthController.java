@@ -3,6 +3,7 @@ package com.sparta.outsourcing.controller;
 import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.dto.TokenDto;
 import com.sparta.outsourcing.enums.AuthEnum;
+import com.sparta.outsourcing.security.UserDetailsImpl;
 import com.sparta.outsourcing.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
