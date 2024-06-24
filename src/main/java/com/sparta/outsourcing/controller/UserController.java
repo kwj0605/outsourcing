@@ -38,11 +38,6 @@ public class UserController {
         return userService.signUp(userDto);
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletResponse response) {
-        userService.logout(response);
-        return ResponseEntity.ok("로그아웃되었습니다.");
-    }
 
     @GetMapping("/{userId}")
     public ResponseEntity<ProfileResponseDto> getProfile(@PathVariable("userId") Long userId) {

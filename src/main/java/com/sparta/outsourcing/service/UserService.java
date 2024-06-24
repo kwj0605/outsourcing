@@ -4,21 +4,19 @@ package com.sparta.outsourcing.service;
 import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.dto.ProfileResponseDto;
 import com.sparta.outsourcing.dto.UserDto;
-import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.enums.UserStatusEnum;
 import com.sparta.outsourcing.exception.AlreadySignupException;
 import com.sparta.outsourcing.exception.UserNotFoundException;
 import com.sparta.outsourcing.repository.UserRepository;
+import com.sparta.outsourcing.security.UserDetailsImpl;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-
-import com.sparta.outsourcing.security.UserDetailsImpl;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.context.MessageSource;
@@ -36,7 +34,7 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
     private final MessageSource messageSource;
-    private final JwtService jwtService;
+
 
     public ResponseEntity<String> signUp(UserDto userDto) {
 
@@ -74,9 +72,9 @@ public class UserService {
             if(!user.getId().equals(userId)){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("다른 유저를 수정할 수 없습니다.");
             }
-//            if(validatePassword(user,profileDto.getPassword())){
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("최근 3번안에 사용한 비밀번호는 사용할 수 없습니다.");
-//            }
+            if(validatePassword(user,profileDto.getPassword())){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("최근 3번안에 사용한 비밀번호는 사용할 수 없습니다.");
+            }
             if(bCryptPasswordEncoder.matches(user.getPassword(),profileDto.getPassword())){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재와 같은 비밀번호는 변경할수 없습니다.");
             }
@@ -110,7 +108,6 @@ public class UserService {
         }
         user.setStatus(UserStatusEnum.DENIED);
         userRepository.save(user);
-        logout(response);
         return ResponseEntity.status(HttpStatus.OK).body("탈퇴 완료");
     }
 
@@ -121,32 +118,19 @@ public class UserService {
         }
         return true;
     }
-//    //이전 변경한 비밀번호 검증
-//    private boolean validatePassword(User user, String password) {
-//        Hibernate.initialize(user.getDeniedPassword());
-//        List<String> userPassword = user.getDeniedPassword();
-//        for (int i = 0; i < userPassword.size(); i++) {
-//            if (bCryptPasswordEncoder.matches(userPassword.get(i), password)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-    public void logout(HttpServletResponse response) {
-        Cookie accessToken = new Cookie(JwtService.AUTHORIZATION_HEADER, null);
-        Cookie refreshToken = new Cookie(JwtService.REFRESH_TOKEN_HEADER, null);
-
-        accessToken.setPath("/");
-        refreshToken.setPath("/");
-
-        accessToken.setHttpOnly(true);
-        accessToken.setMaxAge(0);
-        refreshToken.setHttpOnly(true);
-        refreshToken.setMaxAge(0);
-        response.addCookie(accessToken);
-        response.addCookie(refreshToken);
+    //이전 변경한 비밀번호 검증
+    private boolean validatePassword(User user, String password) {
+        Hibernate.initialize(user.getDeniedPassword());
+        List<String> userPassword = user.getDeniedPassword();
+        for (int i = 0; i < userPassword.size(); i++) {
+            if (bCryptPasswordEncoder.matches(userPassword.get(i), password)) {
+                return true;
+            }
+        }
+        return false;
     }
+
+
 
     private static User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

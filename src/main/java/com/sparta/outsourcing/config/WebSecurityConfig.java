@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -39,20 +40,25 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userRepository);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userRepository,authenticationManager(authenticationConfiguration));
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtService, userDetailsService);
+        return new JwtAuthorizationFilter(jwtService);
     }
 
     @Bean
@@ -73,9 +79,9 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests((authorizeHttpRequests) ->
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/api/users/signup").permitAll()
-                        .requestMatchers("/api/users/login").permitAll()
-                        .requestMatchers("/api/auth/refresh-token").permitAll()
+                        .requestMatchers("/api/user/signup").permitAll()
+                        .requestMatchers("/api/user/login").permitAll()
+                        .requestMatchers("/api/user/*").permitAll()
                         // 서버 단에서 에러가 발생시 아래 url이 에러창을 띄워준다
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
