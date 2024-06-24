@@ -33,7 +33,7 @@ public class OrderService {
     // 주문 등록
     public OrderResponseDto createOrder(long userId, List<OrderRequestDto> menuList) {
 //        User user = findUser(userId);
-
+        checkRestaurant(menuList);
         List<String> menus = getMenus(menuList);
         int totalPrice = getTotalPrice(menuList);
 
@@ -64,6 +64,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
+        checkRestaurant(menuList);
         List<String> menus = getMenus(menuList);
         int totalPrice = getTotalPrice(menuList);
 
@@ -85,6 +86,19 @@ public class OrderService {
     private Menu findMenuById(Long menuId) {
         return menuRepository.findById(menuId).orElseThrow(() ->
                 new IllegalArgumentException("해당 메뉴을 찾을 수 없습니다."));
+    }
+
+    // 다른 가게인지 체크
+    private List<Long> checkRestaurant(List<OrderRequestDto> menuList) {
+        List<Long> restaurants = new ArrayList<>();
+        for (OrderRequestDto requestDto : menuList) {
+            Menu menu = findMenuById(requestDto.getMenuId());
+            restaurants.add(menu.getRestaurant().getRetaurantId());
+        }
+        if (restaurants.stream().distinct().count() != 1) {
+            throw new IllegalArgumentException("같은 가게에서만 주문할 수 있습니다.");
+        }
+        return restaurants;
     }
 
 
