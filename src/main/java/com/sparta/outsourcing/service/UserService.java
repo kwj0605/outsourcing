@@ -36,7 +36,7 @@ public class UserService {
     private final MessageSource messageSource;
 
 
-    public ResponseEntity<String> signUp(UserDto userDto, Long roleId) {
+    public ResponseEntity<String> signUp(UserDto userDto, Long roleId) throws AlreadySignupException {
 
         Optional<User> checkUsername = userRepository.findByUsername(userDto.getUsername());
         if (checkUsername.isPresent()) {

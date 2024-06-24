@@ -33,6 +33,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
+
+    /**
+     * 로그인 URL이 들어오면 해당 Filter를 실행
+     *
+     */
     public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository, AuthenticationManager authenticationManager) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
@@ -40,6 +45,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         setFilterProcessesUrl("/api/user/login");
     }
 
+    /**
+     * 로그인
+     *
+     * @param request  로그인 정보 HTTP 요청
+     * @param response 로그인 정보 HTTP 응답
+     *
+     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("로그인 시도");
@@ -65,6 +77,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
     }
 
+    /**
+     * 로그인 성공 및 JWT 생성
+     *
+     * @return 200 ok
+     */
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
@@ -81,6 +98,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.getWriter().write(new ObjectMapper().writeValueAsString("로그인 성공!"));
     }
 
+    /**
+     * 로그인 실패
+     *
+     * @return 401 Unauthorized
+     */
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
