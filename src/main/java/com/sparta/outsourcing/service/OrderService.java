@@ -93,7 +93,7 @@ public class OrderService {
         List<Long> restaurants = new ArrayList<>();
         for (OrderRequestDto requestDto : menuList) {
             Menu menu = findMenuById(requestDto.getMenuId());
-            restaurants.add(menu.getRestaurant().getRetaurantId());
+            restaurants.add(menu.getRestaurant().getId());
         }
         if (restaurants.stream().distinct().count() != 1) {
             throw new IllegalArgumentException("같은 가게에서만 주문할 수 있습니다.");

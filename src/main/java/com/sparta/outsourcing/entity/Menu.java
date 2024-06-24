@@ -1,5 +1,6 @@
 package com.sparta.outsourcing.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,13 +9,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Menu {
+public class Menu extends Timestamped{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long menuId;
 
-    //    @JsonBackReference
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
@@ -23,10 +24,16 @@ public class Menu {
     private String menuName;
 
     @Column(nullable = false)
-    private int price;
+    private Long price;
 
-    public Menu(Long menuId, String menuName, int price) {
+    public Menu(Long menuId, String menuName, Long price) {
         this.menuId = menuId;
+        this.menuName = menuName;
+        this.price = price;
+    }
+
+    public Menu(Restaurant restaurant, String menuName, Long price) {
+        this.restaurant = restaurant;
         this.menuName = menuName;
         this.price = price;
     }
@@ -39,7 +46,7 @@ public class Menu {
         this.menuName = menuName;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 }
