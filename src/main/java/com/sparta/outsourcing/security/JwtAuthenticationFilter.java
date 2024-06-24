@@ -1,8 +1,9 @@
 package com.sparta.outsourcing.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.outsourcing.dto.login.LoginRequestDto;
+import com.sparta.outsourcing.dto.LoginRequestDto;
 import com.sparta.outsourcing.entity.User;
+import com.sparta.outsourcing.enums.UserStatusEnum;
 import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -27,7 +28,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
-        setFilterProcessesUrl("/api/auth/login");
+        setFilterProcessesUrl("/api/user/login");
     }
 
     @Override
@@ -43,13 +44,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                     throw new IllegalArgumentException("삭제된 사용자입니다.");
                 }
             }
-
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequestDto.getUsername(),
                             loginRequestDto.getPassword(),
                             null
-
                     )
             );
         } catch (IOException e) {
@@ -61,20 +60,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
-        String userId = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
 
         // 토큰 생성
-        String token = jwtService.createToken(userId);
-        String refreshToken = jwtService.createRefreshToken(userId);
-        // refresh token 유저에 저장
-        User user = userRepository.findByUsername(userId).orElseThrow(NullPointerException::new);
-        user.setRefreshToken(refreshToken);
+        String accessToken = jwtService.createToken(username);
+        String refreshToken = jwtService.createRefreshToken(username);
 
-        userRepository.save(user);
+        jwtService.addJwtToCookie(accessToken, response, true);
+        jwtService.addJwtToCookie(refreshToken, response, false);
 
-        // 헤더에 토큰 저장
-        response.setHeader("Authorization", token);
-        response.setHeader("RefreshToken", refreshToken);
         // 로그인 성공 메세지 반환
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString("로그인 성공!"));
@@ -84,5 +78,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
         response.setStatus(401);
+
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("로그인에 실패하였습니다");
     }
 }
