@@ -1,61 +1,51 @@
 package com.sparta.outsourcing.entity;
 
-import com.sparta.outsourcing.dto.ReviewRequest;
-import com.sparta.outsourcing.dto.ReviewUpdateRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.springframework.security.core.userdetails.User;
+import lombok.NoArgsConstructor;
 
-@Entity
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
-@Table(name = "review")
-public class Review {
-
+@Entity
+@NoArgsConstructor
+public class Review extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "review_id")
-    private Long reviewId;
-
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private Order order;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "nickname")
-    private Nickname nickname;
+    @JoinColumn(name = "order_id")
+    private Order order;
 
-    @ManyToOne
-    @JoinColumn(name = "restaurant_id")
-    private Restaurant restaurant;
+    @Column(nullable = false)
+    private Long likes = 0L;
 
-    @ManyToOne
-    @JoinColumn(name = "menu_id")
-    private Menu menu;
+    @Column(nullable = false)
+    private String content;
 
-    @Column(name = "field", nullable = false)
-    private String field;
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> reviewLikes = new ArrayList<>();
 
-    @Column(name = "like", nullable = false)
-    private Long like;
-
-
-    public Review(ReviewRequest request, User user) {
-
-        this.user = request.getUser();
-        this.order = request.getOrder();
-        this.field = request.getField();
-        this.like = request.getLike();
-
+    public Review(User user, Order order, String content) {
+        this.user = user;
+        this.order = order;
+        this.content = content;
     }
 
-    public void UpdateReview(ReviewUpdateRequest updateRequest, User user){
-
-        this.field = updateRequest.getField();
-
+    public Long updateLike(boolean islike){
+        if(islike){this.likes += 1;}
+        else{this.likes -= 1;}
+        return this.likes;
     }
 
+    public void update(String newContent){
+        this.content = newContent;
+    }
 }
+

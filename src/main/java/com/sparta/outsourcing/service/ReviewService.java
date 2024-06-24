@@ -1,76 +1,103 @@
 package com.sparta.outsourcing.service;
 
-import com.sparta.outsourcing.dto.ReviewRequest;
-import com.sparta.outsourcing.dto.ReviewResponse;
+import com.sparta.outsourcing.dto.ReviewDto;
+import com.sparta.outsourcing.entity.Order;
 import com.sparta.outsourcing.entity.Review;
+import com.sparta.outsourcing.entity.User;
+import com.sparta.outsourcing.enums.UserRoleEnum;
+import com.sparta.outsourcing.repository.OrderRepository;
 import com.sparta.outsourcing.repository.ReviewRepository;
-import lombok.RequiredArgsConstructor;
+import com.sparta.outsourcing.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
-@RequiredArgsConstructor
 public class ReviewService {
 
-    @Autowired
-    private final ReviewRepository reviewRepository;
     private final OrderRepository orderRepository;
+    private final ReviewRepository reviewRepository;
 
-    /**
-     * 리뷰 생성
-     */
-    public ReviewResponse createReview(ReviewRequest request) {
-
-        Order order = orderRepository.findById(request.getOrderId()).orElseThrow(
-                () -> new IllegalArgumentException("존재하지 않는 주문입니다.")
-        );
-
-        return new ReviewResponse(review);
-
+    @Autowired
+    public ReviewService(OrderRepository orderRepository, ReviewRepository reviewRepository) {
+        this.orderRepository = orderRepository;
+        this.reviewRepository = reviewRepository;
     }
 
-    /**
-     * 리뷰 조회
-     */
+    public ResponseEntity<String> addReview(ReviewDto reviewDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("인증되지 않은 사용자입니다.");
+        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
-    public Review findReview(Long reviewId){
-        Reivew review = reviewRepository.findById(reviewId).orElseThrow(
-                () -> new IllegalArgumentException("리뷰가 존재하지 않습니다.")
-        );
-        return review;
+        Optional<Order> optionalOrder = orderRepository.findById(reviewDto.getOrderId());
+        if (optionalOrder.isPresent()) {
+            Order order = optionalOrder.get();
+
+            Review review = new Review(user, order, reviewDto.getContent());
+
+            reviewRepository.save(review);
+            return ResponseEntity.ok("리뷰가 성공적으로 작성되었습니다.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    /**
-     * 리뷰 수정
-     */
-
-    public ReviewResponse updateReview(Long reviewId, ReviewRequest request, User user){
-
-        Review review = findReview(reviewId);
-
-        if(!review.getUser().equals(user))
-            throw new IllegalArgumentException("사용자가 일치하지 않습니다.");
-
-        review.update(request);
-
-        return new ReviewResponse(review);
-
+    public List<Review> getAllReviews() {
+        return reviewRepository.findAll();
     }
 
+    public ResponseEntity<String> updateReview(Long reviewId, ReviewDto reviewDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("인증되지 않은 사용자입니다.");
+        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
-    /**
-     * 리뷰 생성
-     */
-    public Review deleteReview(Long reviewId){
+        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+        if (optionalReview.isPresent()) {
+            Review review = optionalReview.get();
 
-        Review review = reviewRepository.findById(reviewId).orElseThrow(
-                () -> new IllegalArgumentException("리뷰가 존재하지 않습니다.")
-        );
-        review.delete();
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+                review.update(reviewDto.getContent());
+                reviewRepository.save(review);
+                return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
+            } else {
+                return ResponseEntity.status(403).body("수정할 권한이 없습니다.");
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
-        return review;
+    public ResponseEntity<String> deleteReview(Long reviewId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("인증되지 않은 사용자입니다.");
+        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
+        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+        if (optionalReview.isPresent()) {
+            Review review = optionalReview.get();
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+                reviewRepository.delete(review);
+                return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
+            } else {
+                return ResponseEntity.status(403).body("삭제할 권한이 없습니다.");
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }
