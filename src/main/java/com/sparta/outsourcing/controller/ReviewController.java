@@ -2,7 +2,7 @@ package com.sparta.outsourcing.controller;
 
 import com.sparta.outsourcing.dto.ReviewRequest;
 import com.sparta.outsourcing.dto.ReviewResponse;
-import com.sparta.outsourcing.dto.ReviewUpdateResquest;
+import com.sparta.outsourcing.dto.ReviewUpdateRequest;
 import com.sparta.outsourcing.entity.Review;
 import com.sparta.outsourcing.repository.ReviewRepository;
 import com.sparta.outsourcing.service.ReviewService;
@@ -49,10 +49,10 @@ public class ReviewController {
     @PutMapping("{reviewId}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ReviewResponse> updateReview(@PathVariable Long reviewId,
-                                               @RequestBody ReviewUpdateResquest reviewUpdateResquest,
+                                               @RequestBody ReviewUpdateRequest reviewUpdateRequest,
                                                @AuthenticationPrincipal UserDetails userDetails){
 
-        return ResponseEntity.ok().body( reviewService.updateReview(reviewId ,reviewUpdateResquest, userDetails));
+        return ResponseEntity.ok().body( reviewService.updateReview(reviewId , reviewUpdateRequest, userDetails));
 
     }
 

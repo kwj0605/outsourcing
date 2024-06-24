@@ -1,7 +1,7 @@
 package com.sparta.outsourcing.entity;
 
 import com.sparta.outsourcing.dto.ReviewRequest;
-import com.sparta.outsourcing.dto.ReviewUpdateResquest;
+import com.sparta.outsourcing.dto.ReviewUpdateRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.security.core.userdetails.User;
@@ -27,6 +27,7 @@ public class Review {
     @ManyToOne
     @JoinColumn(name = "nickname")
     private Nickname nickname;
+
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
@@ -43,14 +44,18 @@ public class Review {
 
 
     public Review(ReviewRequest request, User user) {
+
         this.user = request.getUser();
         this.order = request.getOrder();
         this.field = request.getField();
         this.like = request.getLike();
+
     }
 
-    public void UpdateReview(ReviewUpdateResquest updateRequest, User user){
+    public void UpdateReview(ReviewUpdateRequest updateRequest, User user){
+
         this.field = updateRequest.getField();
+
     }
 
 }

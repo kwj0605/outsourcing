@@ -3,6 +3,6 @@ package com.sparta.outsourcing.dto;
 import lombok.Getter;
 
 @Getter
-public class ReviewUpdateResquest {
+public class ReviewUpdateRequest {
     private String field;
 }
