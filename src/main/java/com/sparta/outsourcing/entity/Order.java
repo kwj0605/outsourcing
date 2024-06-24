@@ -5,40 +5,37 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
 @Table(name = "orders")
-public class Order extends Timestamped {
+public class Order extends Timestamped{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long orderId;
 
-    @ManyToOne
-    @JoinColumn(name="user_id", nullable = false)
-    private User user;
+    //    @ManyToOne
+//    @JoinColumn(name="user_id", nullable = false)
+//    private User user;
+    private long userId;
 
-    @ManyToOne
-    @JoinColumn(name="restaurant_id", nullable = false)
-    private Restaurant restaurant;
-
-    @Column(nullable = false)
     private int totalPrice;
 
-    @Column(nullable = false)
-    private String payType;
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderMenu> orderMenus = new ArrayList<>();
+    private LocalDateTime modifiedAt;
 
-    public Order(User user, Restaurant restaurant, int totalPrice, String payType) {
-        this.user = user;
-        this.restaurant = restaurant;
-        this.totalPrice = totalPrice;
-        this.payType = payType;
-    }
+    private String orderStatus;
+
+    @ElementCollection // 컬렉션 객체임을 알려줌
+    @CollectionTable(name = "menu_order", joinColumns = @JoinColumn(name = "order_id"))
+    @Column(name = "menu_count")
+    private List<String> menuList = new ArrayList<>();
+
 }
