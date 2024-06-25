@@ -24,12 +24,10 @@ import java.util.*;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final MenuRepository menuRepository;
-    private final UserRepository userRepository;
 
-    public OrderService(OrderRepository orderRepository, MenuRepository menuRepository, UserRepository userRepository) {
+    public OrderService(OrderRepository orderRepository, MenuRepository menuRepository) {
         this.orderRepository = orderRepository;
         this.menuRepository = menuRepository;
-        this.userRepository = userRepository;
     }
 
     // 주문 등록
@@ -42,10 +40,8 @@ public class OrderService {
 
         Order order = new Order();
         order.setUser(user);
-//        order.setOrderStatus("orderStatus");
         order.setMenuList(menus);
         order.setTotalPrice(totalPrice);
-        order.setCreatedAt(LocalDateTime.now());
         orderRepository.save(order);
         return OrderResponseDto.toDto(order);
     }
@@ -70,7 +66,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        if (order.getUser().getId() != user.getId()) {
+        if (!Objects.equals(order.getUser().getId(), user.getId())) {
             throw new IllegalArgumentException("주문한 사람만 수정할 수 있습니다");
         }
 
@@ -80,7 +76,6 @@ public class OrderService {
 
         order.setMenuList(menus);
         order.setTotalPrice(totalPrice);
-        order.setModifiedAt(LocalDateTime.now());
         orderRepository.save(order);
         return OrderResponseDto.toDto(order);
     }
@@ -118,10 +113,10 @@ public class OrderService {
         return restaurants;
     }
 
-
-    //주문 메뉴 목록 리스트로 받기
+    //주문 메뉴 목록
     private List<String> getMenus(List<OrderRequestDto> menuList) {
         List<String> menus = new ArrayList<>();
+
         for (OrderRequestDto requestDto : menuList) {
             Menu menu = findMenuById(requestDto.getMenuId());
             String count = Integer.toString(requestDto.getMenuCount());
@@ -130,8 +125,7 @@ public class OrderService {
         return menus;
     }
 
-
-    // 주문 총 가격 구하기
+    // 주문 총 가격
     private int getTotalPrice(List<OrderRequestDto> menuList) {
         int totalPrice = 0;
         for (OrderRequestDto requestDto : menuList) {

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/reviews")
+@RequestMapping("/api/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -28,8 +28,11 @@ public class ReviewController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ReviewDto>> getAllReviews() {
-        return ResponseEntity.ok(reviewService.getAllReviews());
+    public ResponseEntity<List<ReviewDto>> getAllReviews(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size
+    ) {
+        return reviewService.getAllReviews(page, size);
     }
 
     @PutMapping("/{reviewId}")
