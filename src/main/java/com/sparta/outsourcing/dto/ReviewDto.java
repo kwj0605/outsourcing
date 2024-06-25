@@ -1,5 +1,6 @@
 package com.sparta.outsourcing.dto;
 
+import com.sparta.outsourcing.entity.Review;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,5 +14,12 @@ public class ReviewDto {
     public ReviewDto(Long orderId, String content) {
         this.orderId = orderId;
         this.content = content;
+    }
+
+    public static ReviewDto toDto(Review review) {
+        return new ReviewDto(
+                review.getOrder().getOrderId(),
+                review.getContent()
+        );
     }
 }
