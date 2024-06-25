@@ -1,12 +1,13 @@
 package com.sparta.outsourcing.config;
 
+import com.sparta.outsourcing.enums.UserRoleEnum;
+import com.sparta.outsourcing.exception.CustomAccessDeniedHandler;
 import com.sparta.outsourcing.exception.CustomAuthenticationEntryPoint;
 import com.sparta.outsourcing.repository.UserRepository;
 import com.sparta.outsourcing.security.JwtAuthenticationFilter;
 import com.sparta.outsourcing.security.JwtAuthorizationFilter;
-import com.sparta.outsourcing.security.UserDetailsServiceImpl;
 import com.sparta.outsourcing.service.AuthService;
-import com.sparta.outsourcing.service.JwtService;
+import com.sparta.outsourcing.security.JwtProvider;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,21 +22,36 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * SecurityConfig
+ */
 @Configuration
 @EnableJpaAuditing
 @EnableWebSecurity
 public class WebSecurityConfig {
-    private final JwtService jwtService;
+
+    /**
+     * SecurityConfig 필드값
+     */
+    private final JwtProvider jwtProvider;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final UserRepository userRepository;
 
-    public WebSecurityConfig(JwtService jwtService, UserDetailsServiceImpl userDetailsService,
+
+    /**
+     * 생성자 매서드
+     */
+    public WebSecurityConfig(JwtProvider jwtProvider,
                              AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository) {
-        this.jwtService = jwtService;
+        this.jwtProvider = jwtProvider;
         this.authenticationConfiguration = authenticationConfiguration;
         this.userRepository = userRepository;
     }
 
+
+    /**
+     * 빈주입
+     */
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -48,60 +64,57 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userRepository,authenticationManager(authenticationConfiguration));
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider, userRepository,authenticationManager(authenticationConfiguration),bCryptPasswordEncoder());
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtService);
+        return new JwtAuthorizationFilter(jwtProvider);
     }
 
+
+    /**
+     * Security 인증, 인가 설정
+     * 커스텀 필터 설정
+     * 서버단 에러 status 핸들러
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthService authService) throws Exception {
-        /**
-         * csrf 비활성화
-         */
+        // CSRF 설정
         http.csrf((csrf) -> csrf.disable());
 
-        /**
-         * JWT 방식을 사용하기 위한 설정
-         */
+        // 기본 설정인 Session 방식은 사용하지 않고 JWT 방식을 사용하기 위한 설정
         http.sessionManagement((sessionManagement) ->
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
 
-        /**
-         * 요청 권한 설정
-         */
         http.authorizeHttpRequests((authorizeHttpRequests) ->
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/api/user/signup").permitAll()
-                        .requestMatchers("/api/user/login").permitAll()
-                        .requestMatchers("/api/user/**").permitAll()
+                        .requestMatchers("/api/user/signup/**","/api/auth/login","/api/auth/reissue").permitAll()
+                        .requestMatchers("/api/restaurant/menu/","/api/restaurant/delete/",
+                                "/api/restaurant/","/api/menu/add","api/menu/","api/menu/delete/").hasAuthority(UserRoleEnum.ROLE_ADMIN.name())
                         // 서버 단에서 에러가 발생시 아래 url이 에러창을 띄워준다
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
+
         );
 
         http.exceptionHandling(auth -> {
+            auth.accessDeniedPage("/forbidden");
+            auth.accessDeniedHandler(new CustomAccessDeniedHandler());
             auth.authenticationEntryPoint(new CustomAuthenticationEntryPoint());
         });
 
-        /**
-         * 로그아웃 설정
-         */
         http.logout(auth -> auth
                 .logoutUrl("/api/auth/logout")
                 .addLogoutHandler(authService)
                 .logoutSuccessHandler(
                         (((request, response, authentication) -> SecurityContextHolder.clearContext()))));
 
-        /**
-         * 필터 관리
-         */
+        // 필터 관리
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
         return http.build();

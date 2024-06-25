@@ -1,10 +1,14 @@
 package com.sparta.outsourcing.service;
 
+import com.sparta.outsourcing.dto.MenuDto;
 import com.sparta.outsourcing.dto.RestaurantDto;
+import com.sparta.outsourcing.entity.Menu;
 import com.sparta.outsourcing.entity.Restaurant;
 import com.sparta.outsourcing.entity.User;
+import com.sparta.outsourcing.enums.StatusEnum;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.exception.InvalidAccessException;
+import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.repository.RestaurantRepository;
 import com.sparta.outsourcing.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
@@ -19,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -30,6 +35,7 @@ import java.util.stream.Collectors;
 public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
+    private final MenuRepository menuRepository;
     private final MessageSource messageSource;
 
     public ResponseEntity<String> addRestaurant(RestaurantDto restaurantDto, User user) {
@@ -39,12 +45,11 @@ public class RestaurantService {
         return ResponseEntity.ok("식당이 등록되었습니다.");
     }
 
-    public ResponseEntity<String> deleteRestaurant(Long restaurantId) {
-        User user = getUser();
+    public ResponseEntity<String> deleteRestaurant(Long restaurantId, User user) {
         Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
         if (optionalRestaurant.isPresent()) {
             Restaurant restaurant = optionalRestaurant.get();
-            if (restaurant.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+            if (restaurant.getUser().getUsername().equals(user.getUsername())) {
                 restaurantRepository.delete(restaurant);
                 return ResponseEntity.ok("식당 정보가 삭제되었습니다.");
             } else {
@@ -52,9 +57,34 @@ public class RestaurantService {
                         "invalid.access", null, "적합하지 않은 접근입니다.", Locale.getDefault()));
             }
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("식당 정보가 존재하지 않습니다.");
+            return ResponseEntity.ofNullable("식당 정보가 존재하지 않습니다.");
         }
     }
+
+    public ResponseEntity<String> updateRestaurant(Long restaurantId, User user ,RestaurantDto restaurantDto){
+        if (!restaurantRepository.findById(restaurantId).get().getUser().getUsername().equals(user.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("본인의 가게가 아닙니다.");
+        }
+        Optional<Restaurant> restaurant = restaurantRepository.findByIdAndStatus(restaurantId, StatusEnum.ACTIVE);
+        restaurant.get().update(restaurantDto.getRestaurantName(), restaurantDto.getRestaurantInfo(), restaurantDto.getPhoneNumber());
+        restaurantRepository.save(restaurant.get());
+        return ResponseEntity.status(HttpStatus.OK).body("수정 성공!");
+    }
+
+
+    public ResponseEntity<String> getRestaurant(Long restaurantId) {
+        Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
+        if (optionalRestaurant.isPresent()) {
+            Restaurant restaurant = optionalRestaurant.get();
+            RestaurantDto restaurantDto = new RestaurantDto(restaurant.getRestaurantName(), restaurant.getRestaurantInfo(),
+                    restaurant.getPhoneNumber());
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantDto.toString());
+        } else {
+            return ResponseEntity.ofNullable("식당이 존재하지 않습니다.");
+        }
+    }
+
+
 
     public ResponseEntity<List<RestaurantDto>> getAllRestaurants(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -66,37 +96,11 @@ public class RestaurantService {
         return ResponseEntity.ok(restaurantDtoList);
     }
 
-    public ResponseEntity<RestaurantDto> getRestaurant(Long restaurantId) {
-        Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
-        if (optionalRestaurant.isPresent()) {
-            Restaurant restaurant = optionalRestaurant.get();
-            RestaurantDto restaurantDto = new RestaurantDto(restaurant.getRestaurantName(), restaurant.getRestaurantInfo(),
-                    restaurant.getPhoneNumber(), restaurant.getLikes());
-            return ResponseEntity.ok(restaurantDto);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     private RestaurantDto convertToDto(Restaurant restaurant) {
         return new RestaurantDto(restaurant.getRestaurantName(), restaurant.getRestaurantInfo(),
-                restaurant.getPhoneNumber(), restaurant.getLikes());
+                restaurant.getPhoneNumber());
     }
 
-    private static User getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("인증되지 않은 사용자입니다.");
-        }
 
-        // Principal이 UserDetailsImpl 타입인지 확인
-        Object principal = authentication.getPrincipal();
-        if (!(principal instanceof UserDetailsImpl)) {
-            throw new IllegalStateException("사용자 정보를 가져올 수 없습니다.");
-        }
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-        User currentUser = userDetails.getUser();
-        return currentUser;
-    }
 }

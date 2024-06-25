@@ -36,7 +36,7 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity<String> reissue(HttpServletRequest request,
-            HttpServletResponse response) {
+                                          HttpServletResponse response) {
         String refreshToken = request.getHeader(AuthEnum.REFRESH_TOKEN.getValue());
         TokenDto token = authService.reissue(refreshToken);
         response.setHeader(AuthEnum.ACCESS_TOKEN.getValue(), token.getAccessToken());
@@ -54,7 +54,7 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response,
-            Authentication authentication) {
+                                         Authentication authentication) {
         authService.logout(request, response, authentication);
         return ResponseEntity.status(HttpStatus.OK).body("로그아웃완료");
     }

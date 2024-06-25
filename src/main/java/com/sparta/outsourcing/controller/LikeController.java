@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
+/**
+ * 좋아요 기능 controller
+ */
 @RestController
 @RequestMapping("/api/like")
 @RequiredArgsConstructor

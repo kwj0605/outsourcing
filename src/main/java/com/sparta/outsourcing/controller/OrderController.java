@@ -15,21 +15,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/order")
 public class OrderController {
-    private final OrderService orderService;
+    private OrderService orderService;
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
     // 주문 등록
-    // body에 [{"menuId": 1,"menuCount":1}, {"menuId": 3, "menuCount":3}] 형식으로 입력하여 전달
-    @PostMapping
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
-        OrderResponseDto responseDto = orderService.createOrder(menuList, authentication);
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<OrderResponseDto> createOrder(@PathVariable("restaurantId") Long restaurantId ,@RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
+        OrderResponseDto responseDto = orderService.createOrder(restaurantId, menuList, authentication);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
     // 모든 주문 조회
     // 페이지 네이션 5개씩 생성일자 기준 최신순
-    @GetMapping
+    @GetMapping("/")
     public Page<OrderResponseDto> getOrders(@RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "5") int size,
                                             @RequestParam(defaultValue = "createdAt") String sortBy) {

@@ -1,25 +1,17 @@
 package com.sparta.outsourcing.security;
 
 import com.sparta.outsourcing.enums.AuthEnum;
-import com.sparta.outsourcing.service.JwtService;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.GenericFilter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
@@ -27,7 +19,7 @@ import java.io.IOException;
 @Slf4j(topic = "JWT 검증 및 인가")
 public class JwtAuthorizationFilter extends GenericFilterBean {
 
-    private final JwtService jwtService;
+    private final JwtProvider jwtProvider;
 
 
     /**
@@ -58,8 +50,8 @@ public class JwtAuthorizationFilter extends GenericFilterBean {
          *  validateToken 으로 토큰 유효성 검사
          *  토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext 에 저장
          */
-        if (token != null && jwtService.validateToken(token)) {
-            Authentication authentication = jwtService.getAuthentication(token);
+        if (token != null && jwtProvider.validateToken(token)) {
+            Authentication authentication = jwtProvider.getAuthentication(token);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

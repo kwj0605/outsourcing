@@ -1,6 +1,5 @@
 package com.sparta.outsourcing.service;
 
-import com.sparta.outsourcing.dto.RestaurantDto;
 import com.sparta.outsourcing.dto.ReviewDto;
 import com.sparta.outsourcing.entity.Order;
 import com.sparta.outsourcing.entity.Restaurant;
@@ -42,14 +41,18 @@ public class ReviewService {
     }
 
     public ResponseEntity<String> addReview(ReviewDto reviewDto) {
-        User user = getUser();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("인증되지 않은 사용자입니다.");
+        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         Optional<Order> optionalOrder = orderRepository.findById(reviewDto.getOrderId());
-
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
-            if (order.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
-                Review review = new Review(user, order, reviewDto.getContent());
+            if (order.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ROLE_ADMIN)) {
+                Review review = new Review(user, order, reviewDto.getContent(), order.getRestaurant());
                 reviewRepository.save(review);
                 return ResponseEntity.ok("리뷰가 성공적으로 작성되었습니다.");
             } else {
@@ -77,13 +80,18 @@ public class ReviewService {
     }
 
     public ResponseEntity<String> updateReview(Long reviewId, ReviewDto reviewDto) {
-        User user = getUser();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("인증되지 않은 사용자입니다.");
+        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
         if (optionalReview.isPresent()) {
             Review review = optionalReview.get();
 
-            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ROLE_ADMIN)) {
                 review.update(reviewDto.getContent());
                 reviewRepository.save(review);
                 return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
@@ -96,11 +104,17 @@ public class ReviewService {
     }
 
     public ResponseEntity<String> deleteReview(Long reviewId) {
-        User user = getUser();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("인증되지 않은 사용자입니다.");
+        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
         if (optionalReview.isPresent()) {
             Review review = optionalReview.get();
-            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ROLE_ADMIN)) {
                 reviewRepository.delete(review);
                 return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
             } else {
@@ -109,23 +123,6 @@ public class ReviewService {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    private static User getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("인증되지 않은 사용자입니다.");
-        }
-
-        // Principal이 UserDetailsImpl 타입인지 확인
-        Object principal = authentication.getPrincipal();
-        if (!(principal instanceof UserDetailsImpl)) {
-            throw new IllegalStateException("사용자 정보를 가져올 수 없습니다.");
-        }
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-        User currentUser = userDetails.getUser();
-        return currentUser;
     }
 
 }

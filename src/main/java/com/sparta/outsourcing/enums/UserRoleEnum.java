@@ -1,8 +1,8 @@
 package com.sparta.outsourcing.enums;
 
 public enum UserRoleEnum {
-    USER("user"),
-    ADMIN("admin");
+    ROLE_USER("user"),
+    ROLE_ADMIN("admin");
 
     private final String userRole;
 

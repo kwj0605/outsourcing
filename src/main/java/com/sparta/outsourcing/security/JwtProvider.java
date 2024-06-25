@@ -1,9 +1,7 @@
-package com.sparta.outsourcing.service;
+package com.sparta.outsourcing.security;
 
 import com.sparta.outsourcing.dto.TokenDto;
 import com.sparta.outsourcing.enums.AuthEnum;
-import com.sparta.outsourcing.security.UserDetailsImpl;
-import com.sparta.outsourcing.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -26,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class JwtService {
+public class JwtProvider {
     private final long TOKEN_TIME = 30 * 60 * 1000L; // 30분
     private final long REFRESH_TOKEN_TIME = 14 * 24* 60 * 60 * 1000L; // 2주
 

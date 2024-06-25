@@ -3,19 +3,15 @@ package com.sparta.outsourcing.service;
 import com.sparta.outsourcing.dto.TokenDto;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.AuthEnum;
-import com.sparta.outsourcing.enums.UserStatusEnum;
 import com.sparta.outsourcing.repository.UserRepository;
+import com.sparta.outsourcing.security.JwtProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
@@ -34,38 +30,10 @@ public class AuthService implements LogoutHandler {
      */
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final JwtService tokenProvider;
+    private final JwtProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-//    /**
-//     * 로그인 메서드
-//     * @param username
-//     * @param password
-//     * @return
-//     */
-//    @Transactional
-//    public TokenDto login(String username, String password) {
-//        if (!userRepository.existsByUsername(username)) {
-//            throw new UsernameNotFoundException(username);
-//        }
-//        Optional<User> user = userRepository.findUserByUsernameAndStatus(username, UserStatusEnum.ACTIVE);
-//
-//        bCryptPasswordEncoder.matches(password, user.get().getPassword());
-//        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-//                username,password);
-////         false가 활성화임
-//        user.get().setExpired(false);
-//
-//        Authentication authentication = authenticationManagerBuilder.getObject()
-//                .authenticate(authenticationToken);
-//        SecurityContext context = SecurityContextHolder.createEmptyContext();
-//        TokenDto tokenDto = tokenProvider.createToken(authentication);
-//        context.setAuthentication(authentication);
-//        SecurityContextHolder.setContext(context);
-//        user.get().updateRefreshToken(tokenDto.getRefreshToken());
-//
-//        return tokenDto;
-//    }
+
 
     /**
      * 토큰 재발급 메서드
@@ -103,7 +71,7 @@ public class AuthService implements LogoutHandler {
         String accessToken = authHeader.substring(7);
         String username = tokenProvider.getUsername(accessToken);
         User refreshToken = userRepository.findByUsername(username).orElse(null);
-        refreshToken.setExpired(false);
+        refreshToken.updateRefreshToken(null);
     }
 
 

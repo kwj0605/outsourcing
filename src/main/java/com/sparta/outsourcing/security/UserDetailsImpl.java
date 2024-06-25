@@ -2,6 +2,7 @@ package com.sparta.outsourcing.security;
 
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
+import java.util.Collections;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static com.sparta.outsourcing.enums.UserRoleEnum.USER;
 
 @Getter
 public class UserDetailsImpl implements UserDetails {
@@ -33,14 +33,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        UserRoleEnum role = USER;
-        String authority = role.getUserRole();
-
-        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(simpleGrantedAuthority);
-
-        return authorities;
+       return Collections.singletonList(new SimpleGrantedAuthority(this.user.getRole().toString()));
     }
 
     @Override
