@@ -20,6 +20,13 @@ public class LikeController {
 
     private final LikeService likeService;
 
+    /**
+    *  게시물에 대한 좋아요 추가 및 취소 컨트롤러
+     * @param contentType : {RESTAURANT | REVIEW}
+     * @param contentId : RESTAURANT 혹은 REVIEW의 Id
+     *
+     *                  @return 200 ok
+    **/
     @PutMapping("/{contentType}/{contentId}")
     public ResponseEntity<String> updateRestaurantLike(@PathVariable("contentType") ContentTypeEnum contentType, @PathVariable("contentId") Long contentId, @AuthenticationPrincipal UserDetailsImpl userDetails) throws LikeSelfException {
 

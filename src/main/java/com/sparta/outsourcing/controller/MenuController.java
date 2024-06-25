@@ -1,37 +1,36 @@
 package com.sparta.outsourcing.controller;
 
 import com.sparta.outsourcing.dto.MenuDto;
-import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/menu")
 @RestController
 public class MenuController {
     private final MenuService menuService;
-    
-    @PostMapping("/")
-    public ResponseEntity<String> saveMenu( MenuDto menuDto) {
-        return null;
+
+    @GetMapping("/{restaurantId}")
+    public ResponseEntity<List<MenuDto>> getMenuList(@PathVariable Long restaurantId) {
+        return menuService.getMenuList(restaurantId);
     }
-    @GetMapping("/")
-    public ResponseEntity<String> getMenu( MenuDto menuDto) {
-        return null;
+
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<String> addMenu(@PathVariable("restaurantId") Long restaurantId, @RequestBody MenuDto menuDto) {
+        return menuService.addMenuToRestaurant(restaurantId, menuDto);
     }
-    @PatchMapping("/")
-    public ResponseEntity<String> updateMenu( MenuDto menuDto) {
-        return null;
+
+    @PatchMapping("/{menuId}")
+    public ResponseEntity<String> updateMenu(@PathVariable("menuId") Long menuId, @RequestBody MenuDto menuDto) {
+        return menuService.updateMenu(menuId, menuDto);
     }
-    @DeleteMapping("/")
-    public ResponseEntity<String> deleteMenu( MenuDto menuDto) {
-        return null;
+
+    @DeleteMapping("/{menuId}")
+    public ResponseEntity<String> deleteMenu(@PathVariable("menuId") Long menuId) {
+        return menuService.deleteMenu(menuId);
     }
 }
