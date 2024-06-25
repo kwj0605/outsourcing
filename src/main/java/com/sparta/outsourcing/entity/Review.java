@@ -34,7 +34,8 @@ public class Review extends Timestamped {
     @Column(nullable = false)
     private String content;
 
-
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> reviewLikes = new ArrayList<>();
 
     public Review(User user, Order order, String content, Restaurant restaurant) {
         this.user = user;

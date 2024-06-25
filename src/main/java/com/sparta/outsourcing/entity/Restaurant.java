@@ -46,6 +46,12 @@ public class Restaurant extends Timestamped {
     @Column(nullable = false)
     private Long likes = 0L;
 
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RestaurantLike> restaurantLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private List<Order> orders = new ArrayList<>();
+
     public Restaurant(User user, String restaurantName, String restaurantInfo, String phoneNumber) {
         this.user = user;
         this.restaurantName = restaurantName;
