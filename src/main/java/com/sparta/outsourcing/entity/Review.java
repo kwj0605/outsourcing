@@ -35,7 +35,6 @@ public class Review extends Timestamped {
     private String content;
 
 
-
     public Review(User user, Order order, String content, Restaurant restaurant) {
         this.user = user;
         this.order = order;

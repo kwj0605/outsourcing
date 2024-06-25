@@ -21,9 +21,9 @@ public class OrderController {
         this.orderService = orderService;
     }
     // 주문 등록
-    @PostMapping("/")
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
-        OrderResponseDto responseDto = orderService.createOrder(menuList, authentication);
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<OrderResponseDto> createOrder(@PathVariable("restaurantId") Long restaurantId ,@RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
+        OrderResponseDto responseDto = orderService.createOrder(restaurantId, menuList, authentication);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
     // 모든 주문 조회
