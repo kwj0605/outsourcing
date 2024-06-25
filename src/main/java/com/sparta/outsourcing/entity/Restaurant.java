@@ -30,6 +30,7 @@ public class Restaurant extends Timestamped {
     @Column(nullable = false)
     private String phoneNumber;
 
+    @Setter
     @Column(nullable = false)
     private StatusEnum status = StatusEnum.ACTIVE;
 

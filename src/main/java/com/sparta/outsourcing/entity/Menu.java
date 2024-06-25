@@ -19,7 +19,6 @@ public class Menu extends Timestamped{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long menuId;
 
-    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;

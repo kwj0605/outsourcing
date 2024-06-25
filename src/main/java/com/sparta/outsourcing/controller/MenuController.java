@@ -33,11 +33,14 @@ public class MenuController {
         return menuService.addMenu(restaurantId, menuDto, userDetails.getUser());
     }
 
-    @GetMapping("/{restaurantId}/get")
-    public ResponseEntity<List<MenuDto>> getMenu(@PathVariable("restaurantId") Long restaurantId) {
+    @GetMapping("/{restaurantId}/")
+    public ResponseEntity<List<Menu>> getMenus(@PathVariable("restaurantId") Long restaurantId) {
         return menuService.getMenus(restaurantId);
     }
-
+    @GetMapping("/{restaurantId}/{menuId}")
+    public ResponseEntity<MenuDto> getMenu(@PathVariable("restaurantId") Long restaurantId, @PathVariable Long menuId) {
+        return menuService.getMenu(restaurantId,menuId);
+    }
     @PatchMapping("/{restaurantId}/update/{menuId}")
     public ResponseEntity<String> updateMenu(@Valid @RequestBody MenuDto menuDto,
             @PathVariable("restaurantId") Long restaurantId, @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable("menuId") Long menuId) {
