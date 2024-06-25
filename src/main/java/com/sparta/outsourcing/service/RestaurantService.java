@@ -1,13 +1,10 @@
 package com.sparta.outsourcing.service;
 
-import com.sparta.outsourcing.dto.MenuDto;
 import com.sparta.outsourcing.dto.RestaurantDto;
-import com.sparta.outsourcing.entity.Menu;
 import com.sparta.outsourcing.entity.Restaurant;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
 import com.sparta.outsourcing.exception.InvalidAccessException;
-import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.repository.RestaurantRepository;
 import com.sparta.outsourcing.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
@@ -22,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;

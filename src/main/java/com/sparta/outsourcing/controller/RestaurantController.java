@@ -1,6 +1,5 @@
 package com.sparta.outsourcing.controller;
 
-import com.sparta.outsourcing.dto.MenuDto;
 import com.sparta.outsourcing.dto.RestaurantDto;
 import com.sparta.outsourcing.security.UserDetailsImpl;
 import com.sparta.outsourcing.service.RestaurantService;

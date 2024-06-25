@@ -1,7 +1,6 @@
 package com.sparta.outsourcing.controller;
 
 import com.sparta.outsourcing.dto.MenuDto;
-import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
