@@ -4,12 +4,14 @@ import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.dto.ProfileResponseDto;
 import com.sparta.outsourcing.dto.UserDto;
 import com.sparta.outsourcing.exception.SignUpFailureException;
+import com.sparta.outsourcing.security.UserDetailsImpl;
 import com.sparta.outsourcing.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -44,11 +46,12 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<String> updateProfile(@PathVariable("userId") Long userId, @Valid @RequestBody ProfileDto profileDto) {
-        return userService.updateProfile(userId, profileDto);
+    public ResponseEntity<String> updateProfile(@PathVariable("userId") Long userId, @Valid @RequestBody ProfileDto profileDto, @AuthenticationPrincipal
+            UserDetailsImpl userDetails) {
+        return userService.updateProfile(userId, profileDto, userDetails.getUser());
     }
-    @PostMapping("/signout/{userId}")
-    public ResponseEntity<String> signOut(@PathVariable("userId") Long userId, HttpServletResponse httpServletResponse) {
-        return userService.signOut(userId, httpServletResponse);
+    @PostMapping("/delete/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable("userId") Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.deleteUser(userId, userDetails.getUser());
     }
 }

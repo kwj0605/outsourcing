@@ -2,9 +2,10 @@ package com.sparta.outsourcing.entity;
 
 import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.enums.UserRoleEnum;
-import com.sparta.outsourcing.enums.UserStatusEnum;
+import com.sparta.outsourcing.enums.StatusEnum;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -33,11 +34,11 @@ public class User extends Timestamped {
     private String userinfo;
 
     @Setter
-    @Column(nullable = false)
-    private UserStatusEnum status = UserStatusEnum.ACTIVE;
+    @Enumerated(EnumType.STRING)
+    private StatusEnum status = StatusEnum.ACTIVE;
 
     @Setter
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserRoleEnum role;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -48,7 +49,7 @@ public class User extends Timestamped {
 
     @Setter
     @Column
-    private boolean expired = false;
+    private boolean expired = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderMenu> orderMenus = new ArrayList<>();
@@ -84,6 +85,8 @@ public class User extends Timestamped {
     }
     // 삭제처리
     public void deleteUser() {
+        this.status = StatusEnum.DENIED;
+        this.setDeletedAt(LocalDateTime.now());
     }
 
 }

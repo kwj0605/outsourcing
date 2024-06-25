@@ -4,15 +4,19 @@ package com.sparta.outsourcing.service;
 import com.sparta.outsourcing.dto.ProfileDto;
 import com.sparta.outsourcing.dto.ProfileResponseDto;
 import com.sparta.outsourcing.dto.UserDto;
+import com.sparta.outsourcing.entity.Menu;
+import com.sparta.outsourcing.entity.Order;
+import com.sparta.outsourcing.entity.Restaurant;
+import com.sparta.outsourcing.entity.Review;
 import com.sparta.outsourcing.entity.User;
 import com.sparta.outsourcing.enums.UserRoleEnum;
-import com.sparta.outsourcing.enums.UserStatusEnum;
+import com.sparta.outsourcing.enums.StatusEnum;
 import com.sparta.outsourcing.exception.AlreadySignupException;
 import com.sparta.outsourcing.exception.UserNotFoundException;
+import com.sparta.outsourcing.repository.OrderRepository;
+import com.sparta.outsourcing.repository.RestaurantRepository;
+import com.sparta.outsourcing.repository.ReviewRepository;
 import com.sparta.outsourcing.repository.UserRepository;
-import com.sparta.outsourcing.security.UserDetailsImpl;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -22,8 +26,6 @@ import org.hibernate.Hibernate;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,9 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
     private final MessageSource messageSource;
+    private final OrderRepository orderRepository;
+    private final ReviewRepository reviewRepository;
+    private final RestaurantRepository restaurantRepository;
 
 
     public ResponseEntity<String> signUp(UserDto userDto, Long roleId) {
@@ -48,39 +53,52 @@ public class UserService {
                 userDto.getUsername(), bCryptPasswordEncoder.encode(userDto.getPassword()),
                 userDto.getNickname(), userDto.getUserinfo());
         if(roleId == 1L){
-            user.setRole(UserRoleEnum.USER);
+
+            user.setRole(UserRoleEnum.ROLE_USER);
         }else if(roleId == 2L){
-            user.setRole(UserRoleEnum.ADMIN);
+            user.setRole(UserRoleEnum.ROLE_ADMIN);
         }else {return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 권한입니다.");}
 
         userRepository.save(user);
-        return ResponseEntity.status(HttpStatus.OK).body("가입 완료");
+        return ResponseEntity.status(HttpStatus.OK).body("가입 완료\n"+"⣿⣿⣿⣿⣿⣿⣿⠟⠋⠉⠁⠈⠉⠙⠻⢿⡿⠿⠛⠋⠉⠙⠛⢿⣿⣿⣿⣿⣿⣿\n"+
+                "⣿⣿⣿⣿⣿⠟⠁⠀⠀⢀⣀⣀⣀⣀⡀⠀⢆⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿\n"+
+                "⣿⣿⣿⣿⠃⠀⠀⠠⠊⠁⠀⠀⠀⠀⠈⠑⠪⡖⠒⠒⠒⠒⠒⠒⠶⠛⠿⣿⣿⣿\n"+
+                "⣿⣿⡿⡇⠀⠀⠀⠀⠀⠀⡠⢔⡢⠍⠉⠉⠩⠭⢑⣤⣔⠲⠤⠭⠭⠤⠴⢊⡻⣿\n"+
+                "⡿⠁⢀⠇⠀⠀⠀⣤⠭⠓⠊⣁⣤⠂⠠⢀⡈⠱⣶⣆⣠⣴⡖⠁⠂⣀⠈⢷⣮⣹\n"+
+                "⠁⠀⠀⠀⠀⠀⠀⠈⠉⢳⣿⣿⣿⡀⠀⠀⢀⣀⣿⡿⢿⣿⣇⣀⣥⣤⠤⢼⣿⣿\n"+
+                "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡟⠑⠚⢹⡟⠉⣑⠒⢺⡇⡀⠀⡹⠀⠀⣀⣴⣽⣿⣿\n"+
+                "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⣿⠒⠉⠀⠀⢠⠃⠈⠙⠻⣍⠙⢻⡻⣿⣿⣿\n"+
+                "⠀⠀⠀⠀⠀⠀⠀⠀⣀⣘⡄⠀⠀⢸⡇⠀⠀⠀⠘⡇⠀⠀⠀⠘⡄⠀⢱⢸⣿⣿\n"+
+                "⠀⠀⠀⠀⠠⡀⠀⠾⣟⣻⣛⠷⣶⣼⣥⣀⣀⣀⠀⢧⠀⠀⠀⠠⣧⣀⣼⣴⢽⣿\n"+
+                "⠀⠀⠀⠀⠀⠈⠉⠁⠀⠹⡙⠛⠷⣿⣭⣯⣭⣟⣛⣿⣿⣿⣛⣛⣿⣭⣭⣾⣿⣿\n"+
+                "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡀⠀⠀⣇⠀⠉⠉⠉⡏⠉⠙⠛⠛⡿⣻⣯⣷⣿⣿⣿\n"+
+                "⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⢸⠀⠀⠀⡸⠁⣠⣴⣶⣿⣿⣿⣿⣿⣿⣿⣿\n"+
+                "⣿⣿⣿⣿⣶⣶⣦⣤⣤⣤⣷⣤⣄⣈⣆⣤⣤⣧⣶⣷⣿⡻⣿⣿⣿⣿⣿⣿⣿⣿\n"+
+                "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⢿⣿⣿⣿⣿⣿⣿");
     }
 
     @Transactional(readOnly = true)
     public ResponseEntity<ProfileResponseDto> getProfile(Long userId) {
         Optional<User> user = userRepository.findById(userId);
-        if (user.isPresent()) {
-            ProfileResponseDto profileResponseDto = new ProfileResponseDto(user.get().getNickname(), user.get().getUserinfo());
-            return ResponseEntity.status(HttpStatus.OK).body(profileResponseDto);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        if (user.isEmpty()) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사용자가 없습니다!");
         }
+        ProfileResponseDto profileResponseDto = new ProfileResponseDto(user.get().getNickname(), user.get().getUserinfo());
+        return ResponseEntity.status(HttpStatus.OK).body(profileResponseDto);
     }
 
     @Transactional
-    public ResponseEntity<String> updateProfile(Long userId, ProfileDto profileDto) {
-        User user = getUser();
+    public ResponseEntity<String> updateProfile(Long userId, ProfileDto profileDto, User user) {
         ProfileDto newProfileDto;
 
-        if (user.getRole().equals(UserRoleEnum.USER)) {
+        if (user.getRole().equals(UserRoleEnum.ROLE_USER) || user.getRole().equals(UserRoleEnum.ROLE_ADMIN)) {
             if(!user.getId().equals(userId)){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("다른 유저를 수정할 수 없습니다.");
             }
-            if(validatePassword(user,profileDto.getPassword())){
+            if(validatePassword(profileDto.getPassword(),user)){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("최근 3번안에 사용한 비밀번호는 사용할 수 없습니다.");
             }
-            if(bCryptPasswordEncoder.matches(user.getPassword(),profileDto.getPassword())){
+            if(bCryptPasswordEncoder.matches(profileDto.getPassword(),user.getPassword())){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재와 같은 비밀번호는 변경할수 없습니다.");
             }
 
@@ -100,19 +118,35 @@ public class UserService {
     }
 
 
-    public ResponseEntity<String> signOut(Long userId, HttpServletResponse response) {
+    public ResponseEntity<String> deleteUser(Long userId, User user) {
 
         Optional<User> originUser = userRepository.findById(userId);
-        if (originUser.isEmpty() || originUser.get().getStatus().equals(UserStatusEnum.DENIED)) {
+        if (originUser.isEmpty() || originUser.get().getStatus().equals(StatusEnum.DENIED)) {
             throw new UserNotFoundException("유저를 찾을 수 없습니다.");
         }
-        User user = getUser();
 
-        if(!validateUser(userId, user.getId())){
+        if(!validateUser(user.getId(), originUser.get().getId())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("다른 유저를 탈퇴할 수 없습니다.");
         }
-        user.setStatus(UserStatusEnum.DENIED);
-        userRepository.save(user);
+        if(user.getRole().equals(UserRoleEnum.ROLE_USER)){
+            List<Order> orders = orderRepository.findByUserId(userId);
+            orders.forEach(order -> {
+                order.delete();
+                order.getReviews().forEach(Review::delete);
+            });
+        }
+        if(user.getRole().equals(UserRoleEnum.ROLE_ADMIN)){
+            List<Restaurant> restaurants = restaurantRepository.findByUserId(userId);
+            restaurants.forEach(restaurant -> {
+                restaurant.delete();
+                restaurant.getReviews().forEach(Review::delete);
+            });
+        }
+
+        originUser.get().setStatus(StatusEnum.DENIED);
+        originUser.get().setExpired(false);
+        originUser.get().deleteUser();
+        userRepository.save(originUser.get());
         return ResponseEntity.status(HttpStatus.OK).body("탈퇴 완료");
     }
 
@@ -124,33 +158,13 @@ public class UserService {
         return true;
     }
     //이전 변경한 비밀번호 검증
-    private boolean validatePassword(User user, String password) {
-        Hibernate.initialize(user.getDeniedPassword());
+    private boolean validatePassword(String password,User user) {
         List<String> userPassword = user.getDeniedPassword();
         for (int i = 0; i < userPassword.size(); i++) {
-            if (bCryptPasswordEncoder.matches(userPassword.get(i), password)) {
+            if (bCryptPasswordEncoder.matches(password, userPassword.get(i))) {
                 return true;
             }
         }
         return false;
-    }
-
-
-
-    private static User getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("인증되지 않은 사용자입니다.");
-        }
-
-        // Principal이 UserDetailsImpl 타입인지 확인
-        Object principal = authentication.getPrincipal();
-        if (!(principal instanceof UserDetailsImpl)) {
-            throw new IllegalStateException("사용자 정보를 가져올 수 없습니다.");
-        }
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-        User currentUser = userDetails.getUser();
-        return currentUser;
     }
 }

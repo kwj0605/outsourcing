@@ -41,7 +41,7 @@ public class ReviewService {
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
 
-            Review review = new Review(user, order, reviewDto.getContent());
+            Review review = new Review(user, order, reviewDto.getContent(),optionalOrder.get().getRestaurant());
 
             reviewRepository.save(review);
             return ResponseEntity.ok("리뷰가 성공적으로 작성되었습니다.");
@@ -66,7 +66,7 @@ public class ReviewService {
         if (optionalReview.isPresent()) {
             Review review = optionalReview.get();
 
-            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ROLE_ADMIN)) {
                 review.update(reviewDto.getContent());
                 reviewRepository.save(review);
                 return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
@@ -89,7 +89,7 @@ public class ReviewService {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
         if (optionalReview.isPresent()) {
             Review review = optionalReview.get();
-            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ADMIN)) {
+            if (review.getUser().getUsername().equals(user.getUsername()) || user.getRole().equals(UserRoleEnum.ROLE_ADMIN)) {
                 reviewRepository.delete(review);
                 return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
             } else {

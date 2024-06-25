@@ -21,14 +21,14 @@ public class OrderController {
         this.orderService = orderService;
     }
     // 주문 등록
-    @PostMapping
+    @PostMapping("/")
     public ResponseEntity<OrderResponseDto> createOrder(@RequestBody List<OrderRequestDto> menuList, @AuthenticationPrincipal UserDetailsImpl authentication) {
         OrderResponseDto responseDto = orderService.createOrder(menuList, authentication);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
     // 모든 주문 조회
     // 페이지 네이션 5개씩 생성일자 기준 최신순
-    @GetMapping
+    @GetMapping("/")
     public Page<OrderResponseDto> getOrders(@RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "5") int size,
                                             @RequestParam(defaultValue = "createdAt") String sortBy) {

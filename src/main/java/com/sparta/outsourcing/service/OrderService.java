@@ -140,10 +140,4 @@ public class OrderService {
         return totalPrice;
     }
 
-
-
-//    protected User findUser(long id) {
-//        return userRepository.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-//    }
 }

@@ -1,6 +1,7 @@
 package com.sparta.outsourcing.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,25 +24,32 @@ public class Review extends Timestamped {
     @JoinColumn(name = "order_id")
     private Order order;
 
+    @ManyToOne
+    @JoinColumn(name = "restaurant_id")
+    private Restaurant restaurant;
+
     @Column(nullable = false)
     private Long likes = 0L;
 
     @Column(nullable = false)
     private String content;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewLike> reviewLikes = new ArrayList<>();
 
-    public Review(User user, Order order, String content) {
+
+    public Review(User user, Order order, String content, Restaurant restaurant) {
         this.user = user;
         this.order = order;
         this.content = content;
+        this.restaurant = restaurant;
     }
 
     public Long updateLike(boolean islike){
         if(islike){this.likes += 1;}
         else{this.likes -= 1;}
         return this.likes;
+    }
+    public void delete() {
+        setDeletedAt(LocalDateTime.now());
     }
 
     public void update(String newContent){

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/reviews")
+@RequestMapping("/api/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -22,7 +22,6 @@ public class ReviewController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<String> addReview(@RequestBody ReviewDto reviewDto) {
         return reviewService.addReview(reviewDto);
     }
@@ -33,13 +32,11 @@ public class ReviewController {
     }
 
     @PutMapping("/{reviewId}")
-    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<String> updateReview(@PathVariable("reviewId") Long reviewId, @RequestBody ReviewDto reviewDto) {
         return reviewService.updateReview(reviewId, reviewDto);
     }
 
     @DeleteMapping("/{reviewId}")
-    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<String> deleteReview(@PathVariable("reviewId") Long reviewId) {
         return reviewService.deleteReview(reviewId);
     }
