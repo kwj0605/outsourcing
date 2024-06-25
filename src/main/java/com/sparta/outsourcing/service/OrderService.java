@@ -35,7 +35,7 @@ public class OrderService {
     // 주문 등록
     public OrderResponseDto createOrder(List<OrderRequestDto> menuList, UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
-
+        System.out.println(user);
         checkRestaurant(menuList);
         List<String> menus = getMenus(menuList);
         int totalPrice = getTotalPrice(menuList);
@@ -121,6 +121,7 @@ public class OrderService {
     //주문 메뉴 목록
     private List<String> getMenus(List<OrderRequestDto> menuList) {
         List<String> menus = new ArrayList<>();
+
         for (OrderRequestDto requestDto : menuList) {
             Menu menu = findMenuById(requestDto.getMenuId());
             String count = Integer.toString(requestDto.getMenuCount());

@@ -51,6 +51,8 @@ public class LikeService {
         Review review = reviewRepository.findById(contentId).orElseThrow(() -> new RuntimeException("Review not found"));
 
         // 현재의 사용자와 게시물 등록 사용자 비교
+        System.out.println("111111" + user.getUsername());
+        System.out.println("222222" + review.getUser().getUsername());
         if (user.getUsername().equals(review.getUser().getUsername())) {
             throw new LikeSelfException(messageSource.getMessage(
                     "like.self", null, "본인이 작성한 컨텐츠에는 좋아요를 등록할 수 없습니다.", Locale.getDefault()
