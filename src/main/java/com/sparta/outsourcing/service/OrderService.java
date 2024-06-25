@@ -22,9 +22,9 @@ import java.util.*;
 @Service
 @Transactional
 public class OrderService {
-    private OrderRepository orderRepository;
-    private MenuRepository menuRepository;
-    private UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final MenuRepository menuRepository;
+    private final UserRepository userRepository;
 
     public OrderService(OrderRepository orderRepository, MenuRepository menuRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;

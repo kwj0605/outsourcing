@@ -30,6 +30,7 @@ public class LikeService {
 
         Restaurant restaurant = restaurantRepository.findById(contentId).orElseThrow(() -> new RuntimeException("Restaurant not found"));
 
+        // 현재의 사용자와 게시물 등록 사용자 비교
         if (user.getUsername().equals(restaurant.getUser().getUsername())) {
             throw new LikeSelfException(messageSource.getMessage(
                     "like.self", null, "본인이 작성한 컨텐츠에는 좋아요를 등록할 수 없습니다.", Locale.getDefault()
@@ -38,7 +39,8 @@ public class LikeService {
 
         RestaurantLike restaurantLike = restaurantLikeRepository.findByUserAndRestaurant(user, restaurant)
                 .orElseGet(() -> new RestaurantLike(user, restaurant));
-
+        // 좋아요를 이미 누른 상태 -> 좋아요 취소, 해당 식당 좋아요 -1
+        // 좋아요를 누르지 않은 상태 -> 좋아요 등록, 해당 식당 좋아요 +1
         restaurantLike.update();
         restaurantLikeRepository.save(restaurantLike);
 
@@ -48,6 +50,7 @@ public class LikeService {
     public LikeResponseDto updateReviewLike(Long contentId, User user) {
         Review review = reviewRepository.findById(contentId).orElseThrow(() -> new RuntimeException("Review not found"));
 
+        // 현재의 사용자와 게시물 등록 사용자 비교
         if (user.getUsername().equals(review.getUser().getUsername())) {
             throw new LikeSelfException(messageSource.getMessage(
                     "like.self", null, "본인이 작성한 컨텐츠에는 좋아요를 등록할 수 없습니다.", Locale.getDefault()
@@ -56,7 +59,8 @@ public class LikeService {
 
         ReviewLike reviewLike = reviewLikeRepository.findByUserAndReview(user, review)
                 .orElseGet(() -> new ReviewLike(user, review));
-
+        // 좋아요를 이미 누른 상태 -> 좋아요 취소, 해당 리뷰 좋아요 -1
+        // 좋아요를 누르지 않은 상태 -> 좋아요 등록, 해당 리뷰 좋아요 +1
         reviewLike.update();
         reviewLikeRepository.save(reviewLike);
 
