@@ -51,9 +51,6 @@ public class User extends Timestamped {
     private boolean expired = false;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderMenu> orderMenus = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewLike> reviewLikes = new ArrayList<>();
 
     public User(String username, String password, String nickname, String userinfo) {
@@ -82,8 +79,4 @@ public class User extends Timestamped {
     public void updateRefreshToken(String refreshToken) {
         this.refreshtoken = refreshToken;
     }
-    // 삭제처리
-    public void deleteUser() {
-    }
-
 }
