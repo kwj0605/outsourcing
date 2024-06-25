@@ -72,15 +72,15 @@ public class RestaurantService {
     }
 
 
-    public ResponseEntity<RestaurantDto> getRestaurant(Long restaurantId) {
+    public ResponseEntity<String> getRestaurant(Long restaurantId) {
         Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
         if (optionalRestaurant.isPresent()) {
             Restaurant restaurant = optionalRestaurant.get();
             RestaurantDto restaurantDto = new RestaurantDto(restaurant.getRestaurantName(), restaurant.getRestaurantInfo(),
                     restaurant.getPhoneNumber());
-            return ResponseEntity.status(HttpStatus.OK).body(restaurantDto);
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantDto.toString());
         } else {
-            throw new RuntimeException("존재하지 않는 식당입니다.");
+            return ResponseEntity.ofNullable("식당이 존재하지 않습니다.");
         }
     }
 

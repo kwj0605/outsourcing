@@ -47,7 +47,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public ResponseEntity<String> updateProfile(@PathVariable("userId") Long userId, @Valid @RequestBody ProfileDto profileDto, @AuthenticationPrincipal
-            UserDetailsImpl userDetails) {
+    UserDetailsImpl userDetails) {
         return userService.updateProfile(userId, profileDto, userDetails.getUser());
     }
     @PostMapping("/delete/{userId}")

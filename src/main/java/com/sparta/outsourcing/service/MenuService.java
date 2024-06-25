@@ -3,10 +3,11 @@ package com.sparta.outsourcing.service;
 import com.sparta.outsourcing.dto.MenuDto;
 import com.sparta.outsourcing.entity.Menu;
 import com.sparta.outsourcing.entity.User;
+import com.sparta.outsourcing.enums.StatusEnum;
 import com.sparta.outsourcing.repository.MenuRepository;
 import com.sparta.outsourcing.repository.RestaurantRepository;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,22 +34,14 @@ public class MenuService {
         return ResponseEntity.status(HttpStatus.OK).body("메뉴가 등록되었습니다.");
     }
 
-    public ResponseEntity<List<Menu>> getMenus(Long restaurnatId) {
+    public ResponseEntity<List<MenuDto>> getMenus(Long restaurnatId) {
         if(menuRepository.findByRestaurantId(restaurnatId).isEmpty()) {
             throw new RuntimeException("존재하지 않습니다.");
         }
-        List<Menu> menu = menuRepository.findByRestaurantId(restaurnatId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(menu);
+        return ResponseEntity.status(HttpStatus.OK).body(menuRepository.findByRestaurantId(restaurnatId));
     }
-    public ResponseEntity<MenuDto> getMenu(Long restaurnatId, Long menuId) {
-        if(menuRepository.findByRestaurantId(restaurnatId).isEmpty()) {
-            throw new RuntimeException("존재하지 않습니다.");
-        }
-        Optional<Menu> menu = menuRepository.findByRestaurantIdAndMenuId(restaurnatId, menuId);
-        MenuDto menuDto = new MenuDto(menu.get().getMenuName(),menu.get().getPrice());
-        return ResponseEntity.status(HttpStatus.OK).body(menuDto);
-    }
+
     public ResponseEntity<String> deleteMenu(Long restaurnatId, User user, Long menuId){
         validate(restaurnatId, user.getId());
         if(menuRepository.findById(menuId).isEmpty()) {

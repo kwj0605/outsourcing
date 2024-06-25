@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RestaurantController {
 
-     private final RestaurantService restaurantService;
+    private final RestaurantService restaurantService;
 
     @PostMapping("/")
     public ResponseEntity<String> addRestaurant(@RequestBody RestaurantDto restaurantDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -30,12 +30,12 @@ public class RestaurantController {
     }
 
     @GetMapping("/{restaurantId}")
-    public ResponseEntity<RestaurantDto> getRestaurant(@PathVariable("restaurantId") Long restaurantId) {
+    public ResponseEntity<String> getRestaurant(@PathVariable("restaurantId") Long restaurantId) {
         return restaurantService.getRestaurant(restaurantId);
     }
     @PatchMapping("/{restaurantId}")
     public ResponseEntity<String> updateRestaurant(@PathVariable("restaurantId") Long restaurantId, @AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody RestaurantDto restaurantDto) {
-       return restaurantService.updateRestaurant(restaurantId,userDetails.getUser(), restaurantDto);
+        return restaurantService.updateRestaurant(restaurantId,userDetails.getUser(), restaurantDto);
     }
 
     @GetMapping
